@@ -52,7 +52,7 @@ ITZULI_API_KEY=zure-gakoa uv run python -m itzuli_stanza_mcp.itzuli_mcp_server
 Analisi morfologiko automatikoa duen itzulpena:
 
 ```text
-Source: I don't know Basque songs (English)
+Source: No conozco las canciones vascas (Spanish)
 Translation: Ez ditut ezagutzen euskal abestiak (Basque)
 
 Morphological Analysis:
