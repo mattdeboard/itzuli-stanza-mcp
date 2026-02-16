@@ -4,8 +4,8 @@ from unittest.mock import patch
 import pytest
 from mcp.server.fastmcp.exceptions import ToolError
 
-import itzuli_mcp_server
-from itzuli_mcp_server import translate, get_quota, send_feedback
+from itzuli_stanza_mcp import itzuli_mcp_server
+from itzuli_stanza_mcp.itzuli_mcp_server import translate, get_quota, send_feedback
 
 
 class TestTranslate:
