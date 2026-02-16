@@ -3,12 +3,15 @@ import logging
 import os
 import sys
 
+from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
 from itzuli_stanza_mcp import services
 from itzuli_stanza_mcp.nlp import LanguageCode
 from itzuli_stanza_mcp.i18n import LANGUAGE_NAMES
+
+load_dotenv()
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "info").upper()
 logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO), stream=sys.stderr)
