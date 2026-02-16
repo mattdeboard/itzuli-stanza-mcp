@@ -3,15 +3,19 @@ name = "stanza-server"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "dependencies>=7.7.1",
-    "flask>=3.1.2",
     "ipython>=8.18.1",
+    "itzuli>=1.1.0",
+    "mcp>=1.26.0",
     "stanza>=1.11.0",
 ]
 
 [dependency-groups]
 dev = [
+    "anyio>=4.12.1",
+    "pytest>=9.0.2",
+    "pytest-anyio>=0.0.0",
     "ruff>=0.15.1",
 ]

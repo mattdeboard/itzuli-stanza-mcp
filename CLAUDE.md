@@ -68,3 +68,10 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## Appendix/Other
+
+### Markdown
+
+- Always add a language indicator to triple-backtick code blocks. If there is no specific language, use `code` as default.
+- Always write markdown in accordance with markdownlint configuration.

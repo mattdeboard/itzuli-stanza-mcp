@@ -1,5 +1,4 @@
 import stanza
-from flask import Flask, request, jsonify
 
 FRIENDLY_FEATS = {
     "Polarity=Neg": "negation",
@@ -75,19 +74,3 @@ def print_json(rows):
     import json
 
     print(json.dumps(rows_to_dicts(rows), ensure_ascii=False, indent=2))
-
-
-app = Flask(__name__)
-pipeline = create_pipeline()
-
-
-@app.post("/stanza")
-def stanza_endpoint():
-    data = request.get_json()
-    text = data["text"]
-    rows = process_input(pipeline, text)
-    return jsonify(rows_to_dicts(rows))
-
-
-if __name__ == "__main__":
-    app.run(port=5001)
