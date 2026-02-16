@@ -86,13 +86,13 @@ Jatorria: No conozco las canciones vascas (Spanish)
 Itzulpena: Ez ditut ezagutzen euskal abestiak (Basque)
 
 Analisi Morfologikoa:
-| Hitza     | Lema      | Ezaugarriak                                             |
-| --------- | --------- | ------------------------------------------------------- |
-| Ez        | (ez)      | ezeztapena                                              |
-| ditut     | (ukan)    | adierazpen modua, objektu plurala, subjektu singularra, |
-|           |           | 3. pertsona obj (hura/haiek), 1. pertsona subj (nik),   |
-|           |           | aditz jokatua                                           |
-| ezagutzen | (ezagutu) | ohikoa/jarraian                                         |
-| euskal    | (euskal)  | konbinazio aurrizkia                                    |
-| abestiak  | (abesti)  | absolutiboa (nor), mugatu (-a/-ak), plurala             |
+| Hitza     | Lema    | Hitz Mota          | Ezaugarriak                                 |
+| --------- | ------- | ------------------ | ------------------------------------------- |
+| Ez        | ez      | partikulaa         | ezeztapena                                  |
+| ditut     | ukan    | aditz laguntzailea | adierazpen modua, objektu plurala,          |
+|           |         |                    | subjektu singularra, 3. pertsona obj,       |
+|           |         |                    | 1. pertsona subj (nik)                      |
+| ezagutzen | ezagutu | aditza             | ohikoa/jarraian                             |
+| euskal    | euskal  | adjektiboa         | konbinazio aurrizkia                        |
+| abestiak  | abesti  | izena              | absolutiboa (nor), mugatu (-a/-ak), plurala |
 ```

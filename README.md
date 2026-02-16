@@ -86,12 +86,12 @@ Source: I don't know Basque songs (English)
 Translation: Ez ditut ezagutzen euskal abestiak (Basque)
 
 Morphological Analysis:
-| Word      | Lemma     | Features                                                 |
-| --------- | --------- | -------------------------------------------------------- |
-| Ez        | (ez)      | negation                                                 |
-| ditut     | (ukan)    | indicative mood, plural obj, singular sub,               |
-|           |           | 3rd person obj (it/them), 1st person sub (I), conjugated |
-| ezagutzen | (ezagutu) | habitual/ongoing                                         |
-| euskal    | (euskal)  | combining prefix                                         |
-| abestiak  | (abesti)  | absolutive (sub/obj), definite (the), plural             |
+| Word      | Lemma   | Part of Speech | Features                                     |
+| --------- | ------- | -------------- | -------------------------------------------- |
+| Ez        | ez      | particle       | negation                                     |
+| ditut     | ukan    | auxiliary verb | indicative mood, plural obj, singular sub,   |
+|           |         |                | 3rd person obj (it/them), 1st person sub (I) |
+| ezagutzen | ezagutu | verb           | habitual/ongoing                             |
+| euskal    | euskal  | adjective      | combining prefix                             |
+| abestiak  | abesti  | noun           | absolutive (sub/obj), definite (the), plural |
 ```
