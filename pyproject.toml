@@ -1,0 +1,17 @@
+[project]
+name = "stanza-server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "dependencies>=7.7.1",
+    "flask>=3.1.2",
+    "ipython>=8.18.1",
+    "stanza>=1.11.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.1",
+]
