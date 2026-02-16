@@ -56,11 +56,12 @@ Source: No conozco las canciones vascas (Spanish)
 Translation: Ez ditut ezagutzen euskal abestiak (Basque)
 
 Morphological Analysis:
-| Word      | Lemma     | Features                                                                                |
-| --------- | --------- | --------------------------------------------------------------------------------------- |
-| Ez        | (ez)      | negation                                                                                |
-| ditut     | (ukan)    | indicative mood, plural obj, singular sub, 3per obj (it/them), 1per sub (I), conjugated |
-| ezagutzen | (ezagutu) | habitual/ongoing                                                                        |
-| euskal    | (euskal)  | combining prefix                                                                        |
-| abestiak  | (abesti)  | absolutive (sub/obj), definite (the), plural                                            |
+| Word      | Lemma     | Features                                                       |
+| --------- | --------- | -------------------------------------------------------------- |
+| Ez        | (ez)      | negation                                                       |
+| ditut     | (ukan)    | indicative mood, plural obj, singular sub, 3per obj (it/them), |
+|           |           | 1per sub (I), conjugated                                       |
+| ezagutzen | (ezagutu) | habitual/ongoing                                               |
+| euskal    | (euskal)  | combining prefix                                               |
+| abestiak  | (abesti)  | absolutive (sub/obj), definite (the), plural                   |
 ```

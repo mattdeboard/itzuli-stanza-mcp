@@ -47,7 +47,7 @@ ITZULI_API_KEY=your-key uv run python -m itzuli_stanza_mcp.itzuli_mcp_server
 - **get_quota** — Check current API usage quota.
 - **send_feedback** — Submit a correction or evaluation for a previous translation.
 
-### Example Output
+### Example Output 
 
 Translation with automatic morphological analysis:
 
@@ -56,11 +56,12 @@ Source: I don't know Basque songs (English)
 Translation: Ez ditut ezagutzen euskal abestiak (Basque)
 
 Morphological Analysis:
-| Word | Lemma | Features |
-|------|-------|----------|
-| Ez | (ez) | negation |
-| ditut | (ukan) | indicative mood, plural obj, singular sub, 3per obj (it/them), 1per sub (I), conjugated |
-| ezagutzen | (ezagutu) | habitual/ongoing |
-| euskal | (euskal) | combining prefix |
-| abestiak | (abesti) | absolutive (sub/obj), definite (the), plural |
+| Word      | Lemma     | Features                                                       |
+| --------- | --------- | -------------------------------------------------------------- |
+| Ez        | (ez)      | negation                                                       |
+| ditut     | (ukan)    | indicative mood, plural obj, singular sub, 3per obj (it/them), |
+|           |           | 1per sub (I), conjugated                                       |
+| ezagutzen | (ezagutu) | habitual/ongoing                                               |
+| euskal    | (euskal)  | combining prefix                                               |
+| abestiak  | (abesti)  | absolutive (sub/obj), definite (the), plural                   |
 ```

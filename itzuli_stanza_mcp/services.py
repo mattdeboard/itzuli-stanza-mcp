@@ -36,7 +36,7 @@ def translate_with_analysis(api_key: str, text: str, source_language: str, targe
     stanza_pipeline = get_stanza_pipeline()
     rows = process_input(stanza_pipeline, basque_text)
     
-    # Format output
+    # Format output with 100-column limit
     output_lines = []
     output_lines.append(f"Source: {text} ({LANGUAGE_NAMES[source_language]})")
     output_lines.append(f"Translation: {translated_text} ({LANGUAGE_NAMES[target_language]})")
@@ -47,7 +47,38 @@ def translate_with_analysis(api_key: str, text: str, source_language: str, targe
     
     for word, lemma, feats in rows:
         feats_display = feats if feats else "—"
-        output_lines.append(f"| {word} | {lemma} | {feats_display} |")
+        
+        # Calculate current row width
+        row_base = f"| {word} | {lemma} | "
+        row_end = " |"
+        available_width = 100 - len(row_base) - len(row_end)
+        
+        # Wrap features if needed
+        if len(feats_display) > available_width:
+            # Split features on commas and wrap
+            parts = feats_display.split(", ")
+            wrapped_lines = []
+            current_line = ""
+            
+            for part in parts:
+                if current_line == "":
+                    current_line = part
+                elif len(current_line + ", " + part) <= available_width:
+                    current_line += ", " + part
+                else:
+                    wrapped_lines.append(current_line)
+                    current_line = part
+            
+            if current_line:
+                wrapped_lines.append(current_line)
+            
+            # Add first line
+            output_lines.append(f"| {word} | {lemma} | {wrapped_lines[0]} |")
+            # Add continuation lines
+            for line in wrapped_lines[1:]:
+                output_lines.append(f"|      |       | {line} |")
+        else:
+            output_lines.append(f"| {word} | {lemma} | {feats_display} |")
     
     return "\n".join(output_lines)
 
