@@ -47,14 +47,14 @@ def translate_with_analysis(
     output_lines.append(f"{labels['translation']}: {translated_text} ({language_names[target_language]})")
     output_lines.append("")
     output_lines.append(f"{labels['analysis_header']}:")
-    output_lines.append(f"| {labels['word']} | {labels['lemma']} | {labels['features']} |")
-    output_lines.append("|------|-------|----------|")
+    output_lines.append(f"| {labels['word']} | {labels['lemma']} | {labels['part_of_speech']} | {labels['features']} |")
+    output_lines.append("|------|-------|---------------|----------|")
 
-    for word, lemma, feats in rows:
+    for word, lemma, upos, feats in rows:
         feats_display = feats if feats else "—"
 
         # Calculate current row width
-        row_base = f"| {word} | {lemma} | "
+        row_base = f"| {word} | {lemma} | {upos} | "
         row_end = " |"
         available_width = 100 - len(row_base) - len(row_end)
 
@@ -78,12 +78,12 @@ def translate_with_analysis(
                 wrapped_lines.append(current_line)
 
             # Add first line
-            output_lines.append(f"| {word} | {lemma} | {wrapped_lines[0]} |")
+            output_lines.append(f"| {word} | {lemma} | {upos} | {wrapped_lines[0]} |")
             # Add continuation lines
             for line in wrapped_lines[1:]:
-                output_lines.append(f"|      |       | {line} |")
+                output_lines.append(f"|      |       |               | {line} |")
         else:
-            output_lines.append(f"| {word} | {lemma} | {feats_display} |")
+            output_lines.append(f"| {word} | {lemma} | {upos} | {feats_display} |")
 
     return "\n".join(output_lines)
 

@@ -12,7 +12,7 @@ class TestTranslate:
 
         with patch(
             "itzuli_stanza_mcp.services.translate_with_analysis",
-            return_value="Source: Kaixo! (euskera)\nTranslation: Hola! (español)\n\nMorphological Analysis:\n| Word | Lemma | Features |\n|------|-------|----------|\n| Hola | (hola) | — |",
+            return_value="Source: Kaixo! (euskera)\nTranslation: Hola! (español)\n\nMorphological Analysis:\n| Word | Lemma | Part of Speech | Features |\n|------|-------|---------------|----------|\n| Hola | (hola) | interjection | — |",
         ):
             result = translate("Kaixo!", "eu", "es")
 
@@ -31,10 +31,10 @@ class TestTranslate:
         result = translate("Hello!", "en", "es")
         assert "Basque (eu) must be either the source or target language" in result
 
-    def test_result_format_has_three_sections(self):
+    def test_result_format_has_four_columns(self):
         with patch(
             "itzuli_stanza_mcp.services.translate_with_analysis",
-            return_value="Source: Kaixo! (euskera)\nTranslation: Hola! (español)\n\nMorphological Analysis:\n| Word | Lemma | Features |\n|------|-------|----------|\n| Kaixo | kaixo | Animacy=Inan",
+            return_value="Source: Kaixo! (euskera)\nTranslation: Hola! (español)\n\nMorphological Analysis:\n| Word | Lemma | Part of Speech | Features |\n|------|-------|---------------|----------|\n| Kaixo | (kaixo) | interjection | Animacy=Inan |",
         ):
             result = translate("Kaixo!", "eu", "es")
 
@@ -52,9 +52,12 @@ class TestTranslate:
         # Assert morphological analysis section starts
         assert "Morphological Analysis:" in lines[3]
 
-        # Assert table header exists
-        assert "| Word | Lemma | Features |" in result
-        assert "|------|-------|----------|" in result
+        # Assert table header exists with exactly four columns
+        header_line = [line for line in lines if "| Word | Lemma |" in line][0]
+        column_count = header_line.count("|") - 1  # Subtract 1 for leading |
+        assert column_count == 4, f"Expected exactly 4 columns, got {column_count}"
+        assert "| Word | Lemma | Part of Speech | Features |" in result
+        assert "|------|-------|---------------|----------|" in result
 
 
 class TestGetQuota:
