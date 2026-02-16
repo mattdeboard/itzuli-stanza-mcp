@@ -1,58 +1,37 @@
+from typing import List, Tuple, Literal
+
 import stanza
 
-FRIENDLY_FEATS = {
-    "Polarity=Neg": "negation",
-    "Mood=Ind": "indicative mood",
-    "Number[abs]=Plur": "plural obj",
-    "Number[abs]=Sing": "singular obj",
-    "Number[erg]=Sing": "singular sub",
-    "Number[erg]=Plur": "plural sub",
-    "Person[abs]=1": "1per obj (me/us)",
-    "Person[abs]=2": "2per obj (you)",
-    "Person[abs]=3": "3per obj (it/them)",
-    "Person[erg]=1": "1per sub (I)",
-    "Person[erg]=2": "2per sub (you)",
-    "Person[erg]=3": "3per sub (he/she/it)",
-    "VerbForm=Fin": "conjugated",
-    "VerbForm=Inf": "infinitive/base form",
-    "Aspect=Imp": "habitual/ongoing",
-    "Aspect=Perf": "completed act",
-    "Case=Abs": "absolutive (sub/obj)",
-    "Case=Erg": "ergative (transitive sub)",
-    "Case=Dat": "dative (indir obj)",
-    # possessive
-    "Case=Gen": "genitive",
-    "Case=Loc": "locative",
-    "Case=Ine": "inessive (inside/within)",
-    "Definite=Def": "definite (the)",
-    "Definite=Ind": "indefinite (a/an)",
-    "Number=Plur": "plural",
-    "Number=Sing": "singular",
-}
+from itzuli_stanza_mcp.i18n import FRIENDLY_FEATS, QUIRKS
 
-QUIRKS = {"euskal": "combining prefix"}
+LanguageCode = Literal["eu", "en", "es", "fr"]
 
 
-def create_pipeline():
+def create_pipeline() -> stanza.Pipeline:
     return stanza.Pipeline("eu", download_method=stanza.DownloadMethod.REUSE_RESOURCES, processors="tokenize,pos,lemma")
 
 
-def rows_to_dicts(rows):
+def rows_to_dicts(rows: List[Tuple[str, str, str]]) -> List[dict]:
     return [{"word": word, "lemma": lemma, "feats": feats} for word, lemma, feats in rows]
 
 
-def process_input(pipeline, input_text):
+def process_input(
+    pipeline: stanza.Pipeline, input_text: str, language: LanguageCode = "en"
+) -> List[Tuple[str, str, str]]:
     doc = pipeline(input_text)
     rows = []
+    friendly_feats = FRIENDLY_FEATS.get(language, FRIENDLY_FEATS["en"])
+    quirks = QUIRKS.get(language, QUIRKS["en"])
+
     for sent in doc.sentences:
         for word in sent.words:
             descs = []
-            quirk = QUIRKS.get(word.text.lower())
+            quirk = quirks.get(word.text.lower())
             if quirk:
                 descs.append(quirk)
             elif word.feats:
                 for feat in word.feats.split("|"):
-                    friendly = FRIENDLY_FEATS.get(feat)
+                    friendly = friendly_feats.get(feat)
                     if friendly:
                         descs.append(friendly)
             rows.append((word.text, f"({word.lemma})", ", ".join(descs)))
@@ -60,7 +39,7 @@ def process_input(pipeline, input_text):
     return rows
 
 
-def print_table(rows):
+def print_table(rows: List[Tuple[str, str, str]]) -> None:
     word_width = max(len(r[0]) for r in rows)
     lemma_width = max(len(r[1]) for r in rows)
     for word, lemma, feats in rows:
@@ -70,7 +49,7 @@ def print_table(rows):
         print(line)
 
 
-def print_json(rows):
+def print_json(rows: List[Tuple[str, str, str]]) -> None:
     import json
 
     print(json.dumps(rows_to_dicts(rows), ensure_ascii=False, indent=2))

@@ -7,6 +7,8 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
 from itzuli_stanza_mcp import services
+from itzuli_stanza_mcp.nlp import LanguageCode
+from itzuli_stanza_mcp.i18n import LANGUAGE_NAMES
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "info").upper()
 logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO), stream=sys.stderr)
@@ -20,8 +22,10 @@ mcp = FastMCP("itzuli-mcp")
 
 
 @mcp.tool()
-def translate(text: str, source_language: str, target_language: str) -> str:
-    """Translate text to or from Basque with morphological analysis. Basque must be either the source or target language. Supported pairs: eu<->es, eu<->en, eu<->fr."""
+def translate(
+    text: str, source_language: LanguageCode, target_language: LanguageCode, output_language: LanguageCode = "en"
+) -> str:
+    """Translate text to or from Basque with morphological analysis. Basque must be either the source or target language. Supported pairs: eu<->es, eu<->en, eu<->fr. Output can be localized to 'en', 'eu', 'es', or 'fr'."""
     if source_language not in SUPPORTED_LANGUAGES or target_language not in SUPPORTED_LANGUAGES:
         return f"Unsupported language. Supported: {', '.join(SUPPORTED_LANGUAGES)}"
 
@@ -30,7 +34,7 @@ def translate(text: str, source_language: str, target_language: str) -> str:
 
     logger.debug("translate request: %s -> %s, text=%s", source_language, target_language, text)
     try:
-        result = services.translate_with_analysis(api_key, text, source_language, target_language)
+        result = services.translate_with_analysis(api_key, text, source_language, target_language, output_language)
         return result
     except Exception as e:
         raise ToolError(f"Translation with analysis failed: {e}") from e
@@ -61,8 +65,8 @@ def send_feedback(translation_id: str, correction: str, evaluation: int) -> str:
 
 
 def _register_prompt(from_lang: str, to_lang: str) -> None:
-    from_name = services.LANGUAGE_NAMES[from_lang]
-    to_name = services.LANGUAGE_NAMES[to_lang]
+    from_name = LANGUAGE_NAMES["en"][from_lang]
+    to_name = LANGUAGE_NAMES["en"][to_lang]
 
     @mcp.prompt(
         name=f"{from_lang}@{to_lang}",
