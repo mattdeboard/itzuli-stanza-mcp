@@ -28,7 +28,7 @@ def translate_with_analysis(
     # Get translation from Itzuli
     itzuli_client = Itzuli(api_key)
     translation_data = itzuli_client.getTranslation(text, source_language, target_language)
-    translated_text = translation_data.get("translation", "")
+    translated_text = translation_data.get("translated_text", "")
 
     # Determine which text to analyze (always analyze Basque text)
     basque_text = text if source_language == "eu" else translated_text

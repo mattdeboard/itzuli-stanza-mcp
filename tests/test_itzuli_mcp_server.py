@@ -31,6 +31,31 @@ class TestTranslate:
         result = translate("Hello!", "en", "es")
         assert "Basque (eu) must be either the source or target language" in result
 
+    def test_result_format_has_three_sections(self):
+        with patch(
+            "itzuli_stanza_mcp.services.translate_with_analysis",
+            return_value="Source: Kaixo! (euskera)\nTranslation: Hola! (español)\n\nMorphological Analysis:\n| Word | Lemma | Features |\n|------|-------|----------|\n| Kaixo | kaixo | Animacy=Inan",
+        ):
+            result = translate("Kaixo!", "eu", "es")
+
+        lines = result.split("\n")
+
+        # Assert source section (first line)
+        assert lines[0].startswith("Source:")
+
+        # Assert translation section (second line)
+        assert lines[1].startswith("Translation:")
+
+        # Assert empty line separator
+        assert lines[2] == ""
+
+        # Assert morphological analysis section starts
+        assert "Morphological Analysis:" in lines[3]
+
+        # Assert table header exists
+        assert "| Word | Lemma | Features |" in result
+        assert "|------|-------|----------|" in result
+
 
 class TestGetQuota:
     def test_returns_quota_info_on_success(self):
