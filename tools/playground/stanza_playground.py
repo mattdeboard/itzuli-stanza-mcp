@@ -2,7 +2,7 @@
 """Stanza playground for testing Basque morphological analysis."""
 
 import sys
-from itzuli_stanza_mcp.nlp import create_pipeline, process_input
+from itzuli_stanza_mcp.nlp import create_pipeline
 
 
 def main():
@@ -18,9 +18,6 @@ def main():
 
     # Create pipeline using the same configuration as services.py
     pipeline = create_pipeline()
-
-    # Process the input and get results
-    rows = process_input(pipeline, sentence)
 
     # Print the final processor pipeline output
     for sent in pipeline(sentence).sentences:

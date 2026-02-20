@@ -1,0 +1,1 @@
+"""MCP server for Itzuli translation with Stanza morphological analysis."""

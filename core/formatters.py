@@ -1,10 +1,37 @@
 """Formatters for Itzuli+Stanza pipeline output."""
 
 import json
-from typing import List
-from itzuli_stanza_mcp.workflow import TranslationResult
-from itzuli_stanza_mcp.nlp import LanguageCode
-from itzuli_stanza_mcp.i18n import LANGUAGE_NAMES, OUTPUT_LABELS
+from typing import List, Tuple
+from core.types import TranslationResult, LanguageCode
+from core.i18n import LANGUAGE_NAMES, OUTPUT_LABELS, FRIENDLY_FEATS, FRIENDLY_UPOS, QUIRKS
+
+
+def apply_friendly_mappings(
+    raw_analysis: List[Tuple[str, str, str, str]], language: LanguageCode = "en"
+) -> List[Tuple[str, str, str, str]]:
+    """Convert raw Stanza analysis to human-friendly format."""
+    friendly_feats = FRIENDLY_FEATS.get(language, FRIENDLY_FEATS["en"])
+    friendly_upos = FRIENDLY_UPOS.get(language, FRIENDLY_UPOS["en"])
+    quirks = QUIRKS.get(language, QUIRKS["en"])
+
+    friendly_rows = []
+
+    for word, lemma, upos, feats in raw_analysis:
+        # Apply friendly mappings
+        descs = []
+        quirk = quirks.get(word.lower())
+        if quirk:
+            descs.append(quirk)
+        elif feats:
+            for feat in feats.split("|"):
+                friendly = friendly_feats.get(feat, feat)
+                if friendly:
+                    descs.append(friendly)
+
+        upos_friendly = friendly_upos.get(upos, upos)
+        friendly_rows.append((word, f"({lemma})", upos_friendly, ", ".join(descs)))
+
+    return friendly_rows
 
 
 def format_as_markdown_table(result: TranslationResult, output_language: LanguageCode = "en") -> str:
@@ -12,6 +39,10 @@ def format_as_markdown_table(result: TranslationResult, output_language: Languag
     # Get localized labels and language names
     labels = OUTPUT_LABELS.get(output_language, OUTPUT_LABELS["en"])
     language_names = LANGUAGE_NAMES.get(output_language, LANGUAGE_NAMES["en"])
+
+    # Convert raw analysis to friendly format
+    raw_rows = [(row.word, row.lemma, row.upos, row.feats) for row in result.analysis_rows]
+    friendly_rows = apply_friendly_mappings(raw_rows, output_language)
 
     # Format output with 100-column limit
     output_lines = []
@@ -22,11 +53,11 @@ def format_as_markdown_table(result: TranslationResult, output_language: Languag
     output_lines.append(f"| {labels['word']} | {labels['lemma']} | {labels['part_of_speech']} | {labels['features']} |")
     output_lines.append("|------|-------|---------------|----------|")
 
-    for row in result.analysis_rows:
-        feats_display = row.feats if row.feats else "—"
+    for word, lemma, upos, feats in friendly_rows:
+        feats_display = feats if feats else "—"
 
         # Calculate current row width
-        row_base = f"| {row.word} | {row.lemma} | {row.upos} | "
+        row_base = f"| {word} | {lemma} | {upos} | "
         row_end = " |"
         available_width = 100 - len(row_base) - len(row_end)
 
@@ -50,12 +81,12 @@ def format_as_markdown_table(result: TranslationResult, output_language: Languag
                 wrapped_lines.append(current_line)
 
             # Add first line
-            output_lines.append(f"| {row.word} | {row.lemma} | {row.upos} | {wrapped_lines[0]} |")
+            output_lines.append(f"| {word} | {lemma} | {upos} | {wrapped_lines[0]} |")
             # Add continuation lines
             for line in wrapped_lines[1:]:
                 output_lines.append(f"|      |       |               | {line} |")
         else:
-            output_lines.append(f"| {row.word} | {row.lemma} | {row.upos} | {feats_display} |")
+            output_lines.append(f"| {word} | {lemma} | {upos} | {feats_display} |")
 
     return "\n".join(output_lines)
 

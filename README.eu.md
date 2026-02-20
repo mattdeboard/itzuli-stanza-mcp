@@ -1,15 +1,16 @@
-# itzuli-stanza-mcp
+# itzuli-nlp
 
 [🇺🇸 English](README.md) | [🔴⚪🟢 Euskera](README.eu.md)
 
-Euskal hizkuntzaren prozesamendu tresna-sorta bat da, [Itzuli](https://www.euskadi.eus/itzuli/) APIaren itzulpen gaitasunak eta [Stanza](https://stanfordnlp.github.io/stanza/)ren bidezko analisi morfologiko zehatza konbinatzen dituena. Sistemak itzulpen zerbitzuak eta analisi linguistikoa eskaintzen ditu MCP zerbitzarietan paketatuta.
+Euskal hizkuntzaren prozesamendu tresna-sorta bat da, [Itzuli](https://www.euskadi.eus/itzuli/) APIaren itzulpen gaitasunak eta [Stanza](https://stanfordnlp.github.io/stanza/)ren bidezko analisi morfologiko zehatza konbinatzen dituena. Sistemak berrerabilgarriak diren NLP osagaiak, IA laguntzaileen integraziorako MCP zerbitzaria eta frontend aplikazioentzako lerrokatze datuen sortzeko HTTP APIa eskaintzen ditu.
 
 ## Ikuspegi orokorra
 
-Proiektu honek bi zerbitzu osagarri eskaintzen ditu:
+Proiektu honek hiru zerbitzu osagarri eskaintzen ditu:
 
 1. **Itzuli Itzulpen Zerbitzua** — Euskal Gobernuaren itzulpen API ofiziala euskera ↔ gaztelania/ingelesa/frantsesera itzulpen kalitatetsuetarako
 2. **Stanza Analisi Morfologikoa** — Stanford NLP tresna-sorta euskal testuaren banaketa gramatikala, lematizazioa, POS etiketatua eta ezaugarri linguistikoak eskaintzen dituena
+3. **Lerrokatze Datuen Sortzea** — Frontend aplikazioentzako hizkuntza bikoitzeko analisitik lerrokatze scaffoldak sortzeko HTTP API
 
 Zerbitzuak independenteki edo batera erabil daitezke euskal hizkuntzaren prozesamendu osatuetarako.
 
@@ -18,27 +19,52 @@ Zerbitzuak independenteki edo batera erabil daitezke euskal hizkuntzaren prozesa
 Egitura osoaren xehetasunetarako ikus [ARCHITECTURE.eu.md](./ARCHITECTURE.eu.md).
 
 ```code
-itzuli_stanza_mcp/
-  itzuli_mcp_server.py   # MCP zerbitzaria itzulpena eta analisi morfologikoarekin
-  services.py            # MCP-rentzako itsaste geruza
-  workflow.py            # Itzulpen eta analisi workflow nagusia (berrerabilgarria)
-  formatters.py          # Irteera formatuak (markdown, JSON, dict lista)
+core/                    # Berrerabilgarriak diren NLP liburutegi nagusia
+  workflow.py            # Itzulpen eta analisi workflow nagusia
   nlp.py                 # Stanza pipeline eta testu prozesatzea
+  formatters.py          # Irteera formatuak (markdown, JSON, dict lista)
+  types.py               # Partekatutako datu motak
   i18n.py                # Nazioartekotze datuak
+
+mcp_server/              # IA laguntzaileen integraziorako MCP-rentzako kodea
+  server.py              # MCP tresna definizioak
+  services.py            # MCP itsaste geruza
+
+alignment_server/        # Frontend aplikazioentzako HTTP API
+  server.py              # FastAPI HTTP zerbitzaria
+  scaffold.py            # Lerrokatze scaffold sortzea
+  types.py               # Lerrokatze-rentzako Pydantic mota zehatzak
+
+tools/                   # Workflow tresnak eta scriptak
+  dual_analysis.py       # Jatorri eta itzulpen testua aztertzen du
+  generate_scaffold.py   # Analisi bikoitzetik scaffoldak sortu
+  playground/            # Garapenerako/proba scriptak
+
+tests/                   # Osagaiaren arabera antolatuta
+  core/                  # Oinarrizko NLP funtzionalitate probak
+  mcp_server/            # MCP zerbitzari probak
+  alignment_server/      # Lerrokatze zerbitzari probak
+  tools/                 # Tresna eta utilitate probak
 ```
 
 ## Berrerabilgarriak diren Osagaiak
 
 Itzulpen eta analisi funtzionalitate nagusia MCP zerbitzariaz haratago berrerabilgarria izateko diseinatu da:
 
-- **`workflow.py`** — `process_translation_with_analysis()` funtzio nagusia dauka, edozein Python aplikazioan modu independentean erabil daitekeena. Itzulpen emaitzak eta analisi morfologikoa dituen egituraturiko datuak itzultzen ditu.
+- **`core.workflow`** — `process_translation_with_analysis()` funtzio nagusia dauka, edozein Python aplikazioan modu independentean erabil daitekeena. Egituraturiko `TranslationResult` datuak itzultzen ditu.
 
-- **`formatters.py`** — Itzulpen emaitzen irteera formatu anitzak eskaintzen ditu:
+- **`core.nlp`** — Analisi morfologikorako `process_raw_analysis()` eta hizkuntza anitzeko Stanza pipelineentzako `create_pipeline()` eskaintzen ditu.
+
+- **`core.formatters`** — Itzulpen emaitzen irteera formatu anitzak:
   - `format_as_markdown_table()` — 100 zutabeko orratzarekin formatutako taula
   - `format_as_json()` — Itzulpen eta analisi datu guztiak dituen JSON irteera
   - `format_as_dict_list()` — Erabilera programatikorako Python hiztegi zerrenda
 
-Banaketa honek itzuli+stanza funtzionalitatea beste aplikazioetan integratzea ahalbidetzen du IA laguntzailearentzako MCP zerbitzari interfazea mantentzen duen bitartean.
+- **`tools.dual_analysis`** — Jatorri eta itzulpen testua aztertzen duen tresna scripta, hizkuntza bakoitzerako Stanza pipeline bereiziak erabiliz.
+
+- **`alignment_server.scaffold`** — Analisi bikoitzetik lerrokatze scaffold sortzea, egituraturiko lerrokatze datuak behar dituzten frontend aplikazioentzako diseinatuta.
+
+Egitura modular honek itzuli+stanza funtzionalitatea beste aplikazioetan integratzea ahalbidetzen du NLP logika nagusiaren, MCP zerbitzari arduren eta frontend lerrokatze zerbitzuen artean banaketa garbia mantentzen duen bitartean.
 
 ## Itzuli Itzulpen MCP Zerbitzaria
 
@@ -54,7 +80,31 @@ Itzuli itzulpen zerbitzua erabiltzeko, API gako bat behar duzu:
 stdio garraio bidez funtzionatzen du.
 
 ```bash
-ITZULI_API_KEY=zure-gakoa uv run python -m itzuli_stanza_mcp.itzuli_mcp_server
+ITZULI_API_KEY=zure-gakoa uv run python -m mcp_server.server
+```
+
+### Tresna Scriptak
+
+**Analisi Bikoitza Scripta** — Jatorri eta itzulpen testua aztertu:
+
+```bash
+# Euskal jatorria eta ingeles itzulpena aztertu
+uv run python -m tools.dual_analysis "Kaixo mundua" --source eu --target en --format table
+
+# Erabilera programatikorako JSON irteera
+uv run python -m tools.dual_analysis "Hello world" --source en --target eu --format json
+```
+
+**Lerrokatze Zerbitzaria** — Frontend aplikazioentzako HTTP API:
+
+```bash
+# Lerrokatze zerbitzaria abiarazi
+uv run python -m alignment_server.server
+
+# Analisi bikoitzetik scaffolda sortu (POST /analyze-and-scaffold adibidea)
+curl -X POST "http://localhost:8000/analyze-and-scaffold" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Kaixo mundua", "source_lang": "eu", "target_lang": "en", "sentence_id": "adibide-001"}'
 ```
 
 ### Tresnak

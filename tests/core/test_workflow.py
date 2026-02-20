@@ -1,11 +1,7 @@
 from unittest.mock import Mock, patch
 
-from itzuli_stanza_mcp.workflow import (
-    AnalysisRow,
-    TranslationResult,
-    process_translation_with_analysis,
-    get_cached_stanza_pipeline,
-)
+from core.workflow import process_translation_with_analysis, get_cached_stanza_pipeline
+from core.types import AnalysisRow, TranslationResult
 
 
 class TestAnalysisRow:
@@ -40,15 +36,15 @@ class TestTranslationResult:
 
 
 class TestProcessTranslationWithAnalysis:
-    @patch("itzuli_stanza_mcp.workflow.get_cached_stanza_pipeline")
-    @patch("itzuli_stanza_mcp.workflow.process_input")
-    @patch("itzuli_stanza_mcp.workflow.Itzuli")
-    def test_processes_eu_to_en_translation(self, mock_itzuli_class, mock_process_input, mock_get_pipeline):
+    @patch("core.workflow.get_cached_stanza_pipeline")
+    @patch("core.workflow.process_raw_analysis")
+    @patch("core.workflow.Itzuli")
+    def test_processes_eu_to_en_translation(self, mock_itzuli_class, mock_process_raw_analysis, mock_get_pipeline):
         mock_itzuli = Mock()
         mock_itzuli_class.return_value = mock_itzuli
         mock_itzuli.getTranslation.return_value = {"translated_text": "Hello!", "id": "trans-123"}
 
-        mock_process_input.return_value = [("Kaixo", "(kaixo)", "interjection", "Animacy=Inan")]
+        mock_process_raw_analysis.return_value = [AnalysisRow("Kaixo", "kaixo", "INTJ", "Animacy=Inan")]
 
         result = process_translation_with_analysis(
             api_key="test-key", text="Kaixo!", source_language="eu", target_language="en"
@@ -63,17 +59,17 @@ class TestProcessTranslationWithAnalysis:
         assert result.analysis_rows[0].word == "Kaixo"
 
         mock_itzuli.getTranslation.assert_called_once_with("Kaixo!", "eu", "en")
-        mock_process_input.assert_called_once_with(mock_get_pipeline.return_value, "Kaixo!", "en")
+        mock_process_raw_analysis.assert_called_once_with(mock_get_pipeline.return_value, "Kaixo!")
 
-    @patch("itzuli_stanza_mcp.workflow.get_cached_stanza_pipeline")
-    @patch("itzuli_stanza_mcp.workflow.process_input")
-    @patch("itzuli_stanza_mcp.workflow.Itzuli")
-    def test_processes_en_to_eu_translation(self, mock_itzuli_class, mock_process_input, mock_get_pipeline):
+    @patch("core.workflow.get_cached_stanza_pipeline")
+    @patch("core.workflow.process_raw_analysis")
+    @patch("core.workflow.Itzuli")
+    def test_processes_en_to_eu_translation(self, mock_itzuli_class, mock_process_raw_analysis, mock_get_pipeline):
         mock_itzuli = Mock()
         mock_itzuli_class.return_value = mock_itzuli
         mock_itzuli.getTranslation.return_value = {"translated_text": "Kaixo!", "id": "trans-456"}
 
-        mock_process_input.return_value = [("Kaixo", "(kaixo)", "interjection", "Animacy=Inan")]
+        mock_process_raw_analysis.return_value = [AnalysisRow("Kaixo", "kaixo", "INTJ", "Animacy=Inan")]
 
         result = process_translation_with_analysis(
             api_key="test-key", text="Hello!", source_language="en", target_language="eu"
@@ -86,12 +82,12 @@ class TestProcessTranslationWithAnalysis:
         assert result.translation_id == "trans-456"
 
         # Should analyze the translated (Basque) text, not the source English text
-        mock_process_input.assert_called_once_with(mock_get_pipeline.return_value, "Kaixo!", "en")
+        mock_process_raw_analysis.assert_called_once_with(mock_get_pipeline.return_value, "Kaixo!")
 
-    @patch("itzuli_stanza_mcp.workflow.get_cached_stanza_pipeline")
-    @patch("itzuli_stanza_mcp.workflow.process_input")
-    @patch("itzuli_stanza_mcp.workflow.Itzuli")
-    def test_handles_empty_translation_id(self, mock_itzuli_class, mock_process_input, mock_get_pipeline):
+    @patch("core.workflow.get_cached_stanza_pipeline")
+    @patch("core.workflow.process_raw_analysis")
+    @patch("core.workflow.Itzuli")
+    def test_handles_empty_translation_id(self, mock_itzuli_class, mock_process_raw_analysis, mock_get_pipeline):
         mock_itzuli = Mock()
         mock_itzuli_class.return_value = mock_itzuli
         mock_itzuli.getTranslation.return_value = {
@@ -99,7 +95,7 @@ class TestProcessTranslationWithAnalysis:
             # No "id" field
         }
 
-        mock_process_input.return_value = []
+        mock_process_raw_analysis.return_value = []
 
         result = process_translation_with_analysis(
             api_key="test-key", text="Kaixo!", source_language="eu", target_language="en"
@@ -114,7 +110,7 @@ class TestGetCachedStanzaPipeline:
         if hasattr(get_cached_stanza_pipeline, "_pipeline"):
             delattr(get_cached_stanza_pipeline, "_pipeline")
 
-        with patch("itzuli_stanza_mcp.workflow.create_pipeline") as mock_create:
+        with patch("core.workflow.create_pipeline") as mock_create:
             mock_pipeline = Mock()
             mock_create.return_value = mock_pipeline
 

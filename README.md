@@ -1,15 +1,16 @@
-# itzuli-stanza-mcp
+# itzuli-nlp
 
 [🇺🇸 English](README.md) | [🔴⚪🟢 Euskera](README.eu.md)
 
-Basque language processing toolkit that combines translation capabilities from the [Itzuli](https://www.euskadi.eus/itzuli/) API with detailed morphological analysis via [Stanza](https://stanfordnlp.github.io/stanza/). The system provides both translation services and enriched linguistic analysis, packaged as HTTP and MCP servers.
+Basque language processing toolkit that combines translation capabilities from the [Itzuli](https://www.euskadi.eus/itzuli/) API with detailed morphological analysis via [Stanza](https://stanfordnlp.github.io/stanza/). The system provides reusable NLP components, an MCP server for AI assistant integration, and an HTTP API for alignment data generation.
 
 ## Overview
 
-This project offers two complementary services:
+This project offers three complementary services:
 
 1. **Itzuli Translation Service** — Official Basque government translation API for high-quality Basque ↔ Spanish/English/French translation
 2. **Stanza Morphological Analysis** — Stanford NLP toolkit providing detailed grammatical breakdowns of Basque text, including lemmatization, POS tagging, and linguistic features
+3. **Alignment Data Generation** — HTTP API for generating alignment scaffolds from dual-language analysis for frontend applications
 
 The services can be used independently or together to provide comprehensive Basque language processing capabilities.
 
@@ -18,27 +19,52 @@ The services can be used independently or together to provide comprehensive Basq
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for full details on project structure.
 
 ```code
-itzuli_stanza_mcp/
-  itzuli_mcp_server.py   # MCP server providing translation with morphological analysis
-  services.py            # MCP-specific glue layer
-  workflow.py            # Core translation+analysis workflow (reusable)
+core/                    # Core reusable NLP library
+  workflow.py            # Core translation+analysis workflow
+  nlp.py                 # Stanza pipeline and text processing  
   formatters.py          # Output formatting (markdown, JSON, dict list)
-  nlp.py                 # Stanza pipeline and text processing
+  types.py               # Shared data types
   i18n.py                # Internationalization data
+
+mcp_server/              # MCP-specific code for AI assistant integration
+  server.py              # MCP tool definitions
+  services.py            # MCP glue layer
+
+alignment_server/        # HTTP API for frontend applications
+  server.py              # FastAPI HTTP server
+  scaffold.py            # Alignment scaffold generation
+  types.py               # Alignment-specific Pydantic types
+
+tools/                   # Workflow utilities and scripts
+  dual_analysis.py       # Analyzes both source & translation text
+  generate_scaffold.py   # Generate scaffolds from dual analysis
+  playground/            # Development/testing scripts
+
+tests/                   # Organized by component
+  core/                  # Core NLP functionality tests
+  mcp_server/            # MCP server tests
+  alignment_server/      # Alignment server tests  
+  tools/                 # Tools and utilities tests
 ```
 
 ## Reusable Components
 
 The core translation and analysis functionality has been designed for reusability beyond the MCP server context:
 
-- **`workflow.py`** — Contains the core `process_translation_with_analysis()` function that can be used independently in any Python application. Returns structured data with translation results and morphological analysis.
+- **`core.workflow`** — Contains the core `process_translation_with_analysis()` function that can be used independently in any Python application. Returns structured `TranslationResult` data.
 
-- **`formatters.py`** — Provides multiple output formats for translation results:
+- **`core.nlp`** — Provides `process_raw_analysis()` for morphological analysis and `create_pipeline()` for multi-language Stanza pipelines.
+
+- **`core.formatters`** — Multiple output formats for translation results:
   - `format_as_markdown_table()` — Formatted table with 100-column wrapping
   - `format_as_json()` — JSON output with full translation and analysis data
   - `format_as_dict_list()` — Python list of dictionaries for programmatic use
 
-This separation enables integration of itzuli+stanza functionality into other applications while maintaining the MCP server interface for AI assistant integration.
+- **`tools.dual_analysis`** — Utility script that analyzes both source and translated text using separate Stanza pipelines for each language.
+
+- **`alignment_server.scaffold`** — Alignment scaffold generation from dual analysis output, designed for frontend applications that need structured alignment data.
+
+This modular structure enables integration of itzuli+stanza functionality into other applications while maintaining clean separation between core NLP logic, MCP server concerns, and frontend alignment services.
 
 ## Itzuli Translation MCP Server
 
@@ -54,7 +80,31 @@ To use the Itzuli translation service, you need an API key:
 Runs over stdio transport.
 
 ```bash
-ITZULI_API_KEY=your-key uv run python -m itzuli_stanza_mcp.itzuli_mcp_server
+ITZULI_API_KEY=your-key uv run python -m mcp_server.server
+```
+
+### Utility Scripts
+
+**Dual Analysis Script** — Analyze both source and translated text:
+
+```bash
+# Analyze both Basque source and English translation
+uv run python -m tools.dual_analysis "Kaixo mundua" --source eu --target en --format table
+
+# JSON output for programmatic use
+uv run python -m tools.dual_analysis "Hello world" --source en --target eu --format json
+```
+
+**Alignment Server** — HTTP API for frontend applications:
+
+```bash
+# Start the alignment server
+uv run python -m alignment_server.server
+
+# Generate scaffold from dual analysis (example POST to /analyze-and-scaffold)
+curl -X POST "http://localhost:8000/analyze-and-scaffold" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Kaixo mundua", "source_lang": "eu", "target_lang": "en", "sentence_id": "example-001"}'
 ```
 
 ### Tools

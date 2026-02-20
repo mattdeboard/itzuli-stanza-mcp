@@ -1,0 +1,1 @@
+"""HTTP server for alignment data generation for frontend applications."""

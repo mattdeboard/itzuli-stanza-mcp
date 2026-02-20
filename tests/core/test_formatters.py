@@ -1,14 +1,19 @@
 import json
 
-from itzuli_stanza_mcp.workflow import AnalysisRow, TranslationResult
-from itzuli_stanza_mcp.formatters import format_as_markdown_table, format_as_json, format_as_dict_list
+from core.types import AnalysisRow, TranslationResult
+from core.formatters import (
+    format_as_markdown_table,
+    format_as_json,
+    format_as_dict_list,
+    apply_friendly_mappings,
+)
 
 
 class TestFormatAsMarkdownTable:
     def test_formats_basic_translation_result(self):
         rows = [
-            AnalysisRow("Kaixo", "(kaixo)", "interjection", "Animacy=Inan"),
-            AnalysisRow("mundua", "(mundu)", "noun", "Case=Abs|Definite=Def|Number=Sing"),
+            AnalysisRow("Kaixo", "kaixo", "INTJ", "Animacy=Inan"),
+            AnalysisRow("mundua", "mundu", "NOUN", "Case=Abs|Definite=Def|Number=Sing"),
         ]
         result = TranslationResult(
             source_text="Kaixo mundua!",
@@ -26,11 +31,11 @@ class TestFormatAsMarkdownTable:
         assert "Morphological Analysis:" in output
         assert "| Word | Lemma | Part of Speech | Features |" in output
         assert "|------|-------|---------------|----------|" in output
-        assert "| Kaixo | (kaixo) | interjection | Animacy=Inan |" in output
-        assert "| mundua | (mundu) | noun | Case=Abs|Definite=Def|Number=Sing |" in output
+        assert "| Kaixo | (kaixo) | interjection | inanimate |" in output
+        assert "| mundua | (mundu) | noun | absolutive (sub/obj), definite (the), singular |" in output
 
     def test_formats_with_localized_labels_euskera(self):
-        rows = [AnalysisRow("Kaixo", "(kaixo)", "interjection", "Animacy=Inan")]
+        rows = [AnalysisRow("Kaixo", "kaixo", "INTJ", "Animacy=Inan")]
         result = TranslationResult(
             source_text="Kaixo!",
             source_language="eu",
@@ -48,7 +53,7 @@ class TestFormatAsMarkdownTable:
         assert "| Hitza | Lema | Hitz Mota | Ezaugarriak |" in output
 
     def test_formats_with_localized_labels_spanish(self):
-        rows = [AnalysisRow("Kaixo", "(kaixo)", "interjection", "Animacy=Inan")]
+        rows = [AnalysisRow("Kaixo", "kaixo", "INTJ", "Animacy=Inan")]
         result = TranslationResult(
             source_text="Kaixo!",
             source_language="eu",
@@ -89,7 +94,7 @@ class TestFormatAsMarkdownTable:
             assert len(line) <= 100, f"Line exceeds 100 chars: {line}"
 
     def test_handles_empty_features(self):
-        rows = [AnalysisRow("test", "(test)", "noun", "")]
+        rows = [AnalysisRow("test", "test", "NOUN", "")]
         result = TranslationResult(
             source_text="test",
             source_language="eu",
@@ -104,7 +109,7 @@ class TestFormatAsMarkdownTable:
         assert "| test | (test) | noun | — |" in output
 
     def test_handles_none_features(self):
-        rows = [AnalysisRow("test", "(test)", "noun", None)]
+        rows = [AnalysisRow("test", "test", "NOUN", None)]
         result = TranslationResult(
             source_text="test",
             source_language="eu",
@@ -122,8 +127,8 @@ class TestFormatAsMarkdownTable:
 class TestFormatAsJson:
     def test_formats_translation_result_as_json(self):
         rows = [
-            AnalysisRow("Kaixo", "(kaixo)", "interjection", "Animacy=Inan"),
-            AnalysisRow("mundua", "(mundu)", "noun", "Case=Abs|Definite=Def|Number=Sing"),
+            AnalysisRow("Kaixo", "kaixo", "INTJ", "Animacy=Inan"),
+            AnalysisRow("mundua", "mundu", "NOUN", "Case=Abs|Definite=Def|Number=Sing"),
         ]
         result = TranslationResult(
             source_text="Kaixo mundua!",
@@ -146,8 +151,8 @@ class TestFormatAsJson:
 
         first_analysis = parsed["morphological_analysis"][0]
         assert first_analysis["word"] == "Kaixo"
-        assert first_analysis["lemma"] == "(kaixo)"
-        assert first_analysis["part_of_speech"] == "interjection"
+        assert first_analysis["lemma"] == "kaixo"
+        assert first_analysis["part_of_speech"] == "INTJ"
         assert first_analysis["features"] == "Animacy=Inan"
 
     def test_handles_empty_analysis_rows(self):
@@ -166,7 +171,7 @@ class TestFormatAsJson:
         assert parsed["morphological_analysis"] == []
 
     def test_preserves_unicode_characters(self):
-        rows = [AnalysisRow("ñ", "(ñ)", "noun", "special")]
+        rows = [AnalysisRow("ñ", "ñ", "NOUN", "special")]
         result = TranslationResult(
             source_text="ñ",
             source_language="eu",
@@ -187,8 +192,8 @@ class TestFormatAsJson:
 class TestFormatAsDictList:
     def test_formats_analysis_rows_as_dict_list(self):
         rows = [
-            AnalysisRow("Kaixo", "(kaixo)", "interjection", "Animacy=Inan"),
-            AnalysisRow("mundua", "(mundu)", "noun", "Case=Abs|Definite=Def|Number=Sing"),
+            AnalysisRow("Kaixo", "kaixo", "INTJ", "Animacy=Inan"),
+            AnalysisRow("mundua", "mundu", "NOUN", "Case=Abs|Definite=Def|Number=Sing"),
         ]
         result = TranslationResult(
             source_text="Kaixo mundua!",
@@ -204,14 +209,14 @@ class TestFormatAsDictList:
         assert len(output) == 2
         assert output[0] == {
             "word": "Kaixo",
-            "lemma": "(kaixo)",
-            "part_of_speech": "interjection",
+            "lemma": "kaixo",
+            "part_of_speech": "INTJ",
             "features": "Animacy=Inan",
         }
         assert output[1] == {
             "word": "mundua",
-            "lemma": "(mundu)",
-            "part_of_speech": "noun",
+            "lemma": "mundu",
+            "part_of_speech": "NOUN",
             "features": "Case=Abs|Definite=Def|Number=Sing",
         }
 
@@ -228,3 +233,38 @@ class TestFormatAsDictList:
         output = format_as_dict_list(result, "en")
 
         assert output == []
+
+
+class TestApplyFriendlyMappings:
+    def test_converts_raw_analysis_to_friendly_format(self):
+        raw_analysis = [
+            ("Kaixo", "kaixo", "INTJ", "Animacy=Inan"),
+            ("mundua", "mundu", "NOUN", "Case=Abs|Definite=Def|Number=Sing"),
+        ]
+
+        friendly = apply_friendly_mappings(raw_analysis, "en")
+
+        assert len(friendly) == 2
+        assert friendly[0] == ("Kaixo", "(kaixo)", "interjection", "inanimate")
+        assert friendly[1] == ("mundua", "(mundu)", "noun", "absolutive (sub/obj), definite (the), singular")
+
+    def test_handles_quirks(self):
+        raw_analysis = [("euskal", "euskal", "ADJ", "")]
+
+        friendly = apply_friendly_mappings(raw_analysis, "en")
+
+        assert friendly[0] == ("euskal", "(euskal)", "adjective", "combining prefix")
+
+    def test_handles_empty_features(self):
+        raw_analysis = [("test", "test", "NOUN", "")]
+
+        friendly = apply_friendly_mappings(raw_analysis, "en")
+
+        assert friendly[0] == ("test", "(test)", "noun", "")
+
+    def test_localizes_to_basque(self):
+        raw_analysis = [("Kaixo", "kaixo", "INTJ", "Animacy=Inan")]
+
+        friendly = apply_friendly_mappings(raw_analysis, "eu")
+
+        assert friendly[0] == ("Kaixo", "(kaixo)", "harridura", "bizigabea")
