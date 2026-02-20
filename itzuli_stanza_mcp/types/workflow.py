@@ -9,6 +9,7 @@ LanguageCode = Literal["eu", "en", "es", "fr"]
 @dataclass
 class AnalysisRow:
     """Represents a single word analysis row."""
+
     word: str
     lemma: str
     upos: str
@@ -18,6 +19,7 @@ class AnalysisRow:
 @dataclass
 class TranslationResult:
     """Result of translation with morphological analysis."""
+
     source_text: str
     source_language: LanguageCode
     translated_text: str
