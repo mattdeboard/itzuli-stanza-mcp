@@ -8,7 +8,8 @@ The pipeline is:
 
 The transformation from AnalysisRow[] to these types involves:
 - Automatic: ID assignment, POS mapping, feature string parsing
-- Manual/AI-assisted: morpheme segmentation, cross-language alignment
+- Manual/AI-assisted: cross-language alignment
+
 """
 
 from __future__ import annotations
@@ -29,12 +30,8 @@ class LayerType(str, Enum):
 class Token(BaseModel):
     """A single token (word) in either source or target sentence.
 
-    For target language tokens with agglutinative morphology, the
-    `morphemes` list segments the token into meaningful sub-units.
-    Source language tokens typically have no morpheme segmentation.
-
-    When `morphemes` is populated, ribbon endpoints target morpheme IDs
-    rather than the token ID.
+    Tokens are the atomic unit for alignment — ribbon endpoints
+    target token IDs.
     """
 
     id: str
@@ -53,16 +50,14 @@ class TokenizedSentence(BaseModel):
 
 
 class Alignment(BaseModel):
-    """A single mapping between source and target elements within one layer.
+    """A single mapping between source and target tokens within one layer.
 
-    `source` and `target` are lists of IDs — token IDs for source,
-    morpheme IDs (or token IDs if no morpheme segmentation) for target.
-
-    Lists rather than single IDs because alignments can be:
-    - one-to-one:   ["s2"] → ["t2a"]
-    - one-to-many:  ["s1"] → ["t0a", "t1a"]
-    - many-to-one:  ["s4", "s5", "s6"] → ["t3a"]
-    - many-to-many: ["s2", "s3"] → ["t4a", "t4b"]
+    `source` and `target` are lists of token IDs. Lists rather than
+    single IDs because alignments can be:
+    - one-to-one:   ["s2"] → ["t2"]
+    - one-to-many:  ["s1"] → ["t0", "t1"]
+    - many-to-one:  ["s4", "s5", "s6"] → ["t3"]
+    - many-to-many: ["s2", "s3"] → ["t3", "t4"]
 
     The same alignment may appear in multiple layers if it is relevant
     to more than one analytical dimension.
