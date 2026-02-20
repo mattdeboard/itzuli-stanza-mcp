@@ -110,7 +110,7 @@ class TestGetCachedStanzaPipeline:
         if hasattr(get_cached_stanza_pipeline, "_pipeline"):
             delattr(get_cached_stanza_pipeline, "_pipeline")
 
-        with patch("itzuli_stanza_mcp.workflow.create_basque_pipeline") as mock_create:
+        with patch("itzuli_stanza_mcp.workflow.create_pipeline") as mock_create:
             mock_pipeline = Mock()
             mock_create.return_value = mock_pipeline
 

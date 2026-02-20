@@ -2,11 +2,13 @@ from typing import List, Tuple
 
 import stanza
 
-from itzuli_stanza_mcp.types import AnalysisRow
+from itzuli_stanza_mcp.types import AnalysisRow, LanguageCode
 
 
-def create_basque_pipeline() -> stanza.Pipeline:
-    return stanza.Pipeline("eu", download_method=stanza.DownloadMethod.REUSE_RESOURCES, processors="tokenize,pos,lemma")
+def create_pipeline(language: LanguageCode = "eu") -> stanza.Pipeline:
+    return stanza.Pipeline(
+        language, download_method=stanza.DownloadMethod.REUSE_RESOURCES, processors="tokenize,pos,lemma"
+    )
 
 
 def process_raw_analysis(pipeline: stanza.Pipeline, input_text: str) -> List[AnalysisRow]:

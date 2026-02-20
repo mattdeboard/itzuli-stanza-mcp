@@ -3,7 +3,7 @@
 import logging
 
 from Itzuli import Itzuli
-from itzuli_stanza_mcp.nlp import create_basque_pipeline, process_raw_analysis
+from itzuli_stanza_mcp.nlp import create_pipeline, process_raw_analysis
 from itzuli_stanza_mcp.types import TranslationResult, LanguageCode
 
 logger = logging.getLogger("itzuli-stanza-pipeline")
@@ -12,7 +12,7 @@ logger = logging.getLogger("itzuli-stanza-pipeline")
 def get_cached_stanza_pipeline():
     """Get or create Stanza pipeline (cached)."""
     if not hasattr(get_cached_stanza_pipeline, "_pipeline"):
-        get_cached_stanza_pipeline._pipeline = create_basque_pipeline()
+        get_cached_stanza_pipeline._pipeline = create_pipeline()
     return get_cached_stanza_pipeline._pipeline
 
 

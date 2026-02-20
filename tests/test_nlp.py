@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from itzuli_stanza_mcp.nlp import process_raw_analysis, create_basque_pipeline
+from itzuli_stanza_mcp.nlp import process_raw_analysis, create_pipeline
 from itzuli_stanza_mcp.types import AnalysisRow
 
 
@@ -92,7 +92,7 @@ class TestCreatePipeline:
     def test_creates_basque_pipeline(self):
         # This is more of an integration test - we can't easily mock Stanza
         # Just ensure it returns a pipeline object without errors
-        pipeline = create_basque_pipeline()
+        pipeline = create_pipeline()
 
         # Basic validation that it's a Stanza pipeline
         assert hasattr(pipeline, "__call__")  # Should be callable
