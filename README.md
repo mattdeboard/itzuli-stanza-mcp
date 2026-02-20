@@ -20,9 +20,25 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for full details on project structure.
 ```code
 itzuli_stanza_mcp/
   itzuli_mcp_server.py   # MCP server providing translation with morphological analysis
-  services.py            # Service layer coordinating Itzuli and Stanza
+  services.py            # MCP-specific glue layer
+  workflow.py            # Core translation+analysis workflow (reusable)
+  formatters.py          # Output formatting (markdown, JSON, dict list)
   nlp.py                 # Stanza pipeline and text processing
+  i18n.py                # Internationalization data
 ```
+
+## Reusable Components
+
+The core translation and analysis functionality has been designed for reusability beyond the MCP server context:
+
+- **`workflow.py`** — Contains the core `process_translation_with_analysis()` function that can be used independently in any Python application. Returns structured data with translation results and morphological analysis.
+
+- **`formatters.py`** — Provides multiple output formats for translation results:
+  - `format_as_markdown_table()` — Formatted table with 100-column wrapping
+  - `format_as_json()` — JSON output with full translation and analysis data
+  - `format_as_dict_list()` — Python list of dictionaries for programmatic use
+
+This separation enables integration of itzuli+stanza functionality into other applications while maintaining the MCP server interface for AI assistant integration.
 
 ## Itzuli Translation MCP Server
 
