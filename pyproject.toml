@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "dependencies>=7.7.1",
+    "fastapi>=0.129.0",
     "fastmcp>=2.14.5",
     "ipython>=8.18.1",
     "itzuli>=1.1.0",
@@ -13,6 +14,7 @@ dependencies = [
     "pydantic>=2.12.5",
     "python-dotenv>=1.2.1",
     "stanza>=1.11.0",
+    "uvicorn>=0.40.0",
 ]
 
 [dependency-groups]

@@ -1,0 +1,58 @@
+{
+  "sentences": [
+    {
+      "id": "test-001",
+      "source": {
+        "lang": "eu",
+        "text": "Kaixo mundua",
+        "tokens": [
+          {
+            "id": "s0",
+            "form": "Kaixo",
+            "lemma": "kaixo",
+            "pos": "intj",
+            "features": []
+          },
+          {
+            "id": "s1",
+            "form": "mundua",
+            "lemma": "mundu",
+            "pos": "noun",
+            "features": [
+              "absolutive (sub/obj)",
+              "definite (the)",
+              "singular"
+            ]
+          }
+        ]
+      },
+      "target": {
+        "lang": "en",
+        "text": "Hello world",
+        "tokens": [
+          {
+            "id": "t0",
+            "form": "Hello",
+            "lemma": "hello",
+            "pos": "intj",
+            "features": []
+          },
+          {
+            "id": "t1",
+            "form": "world",
+            "lemma": "world",
+            "pos": "noun",
+            "features": [
+              "singular"
+            ]
+          }
+        ]
+      },
+      "layers": {
+        "lexical": [],
+        "grammatical_relations": [],
+        "features": []
+      }
+    }
+  ]
+}

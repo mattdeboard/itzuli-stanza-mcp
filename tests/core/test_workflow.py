@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
-from itzuli_nlp.workflow import process_translation_with_analysis, get_cached_stanza_pipeline
-from itzuli_nlp.types import AnalysisRow, TranslationResult
+from core.workflow import process_translation_with_analysis, get_cached_stanza_pipeline
+from core.types import AnalysisRow, TranslationResult
 
 
 class TestAnalysisRow:
@@ -36,9 +36,9 @@ class TestTranslationResult:
 
 
 class TestProcessTranslationWithAnalysis:
-    @patch("itzuli_nlp.workflow.get_cached_stanza_pipeline")
-    @patch("itzuli_nlp.workflow.process_raw_analysis")
-    @patch("itzuli_nlp.workflow.Itzuli")
+    @patch("core.workflow.get_cached_stanza_pipeline")
+    @patch("core.workflow.process_raw_analysis")
+    @patch("core.workflow.Itzuli")
     def test_processes_eu_to_en_translation(self, mock_itzuli_class, mock_process_raw_analysis, mock_get_pipeline):
         mock_itzuli = Mock()
         mock_itzuli_class.return_value = mock_itzuli
@@ -61,9 +61,9 @@ class TestProcessTranslationWithAnalysis:
         mock_itzuli.getTranslation.assert_called_once_with("Kaixo!", "eu", "en")
         mock_process_raw_analysis.assert_called_once_with(mock_get_pipeline.return_value, "Kaixo!")
 
-    @patch("itzuli_nlp.workflow.get_cached_stanza_pipeline")
-    @patch("itzuli_nlp.workflow.process_raw_analysis")
-    @patch("itzuli_nlp.workflow.Itzuli")
+    @patch("core.workflow.get_cached_stanza_pipeline")
+    @patch("core.workflow.process_raw_analysis")
+    @patch("core.workflow.Itzuli")
     def test_processes_en_to_eu_translation(self, mock_itzuli_class, mock_process_raw_analysis, mock_get_pipeline):
         mock_itzuli = Mock()
         mock_itzuli_class.return_value = mock_itzuli
@@ -84,9 +84,9 @@ class TestProcessTranslationWithAnalysis:
         # Should analyze the translated (Basque) text, not the source English text
         mock_process_raw_analysis.assert_called_once_with(mock_get_pipeline.return_value, "Kaixo!")
 
-    @patch("itzuli_nlp.workflow.get_cached_stanza_pipeline")
-    @patch("itzuli_nlp.workflow.process_raw_analysis")
-    @patch("itzuli_nlp.workflow.Itzuli")
+    @patch("core.workflow.get_cached_stanza_pipeline")
+    @patch("core.workflow.process_raw_analysis")
+    @patch("core.workflow.Itzuli")
     def test_handles_empty_translation_id(self, mock_itzuli_class, mock_process_raw_analysis, mock_get_pipeline):
         mock_itzuli = Mock()
         mock_itzuli_class.return_value = mock_itzuli
@@ -110,7 +110,7 @@ class TestGetCachedStanzaPipeline:
         if hasattr(get_cached_stanza_pipeline, "_pipeline"):
             delattr(get_cached_stanza_pipeline, "_pipeline")
 
-        with patch("itzuli_nlp.workflow.create_pipeline") as mock_create:
+        with patch("core.workflow.create_pipeline") as mock_create:
             mock_pipeline = Mock()
             mock_create.return_value = mock_pipeline
 

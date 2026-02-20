@@ -2,8 +2,8 @@
 
 import json
 from typing import List, Tuple
-from itzuli_nlp.types import TranslationResult, LanguageCode
-from itzuli_nlp.i18n import LANGUAGE_NAMES, OUTPUT_LABELS, FRIENDLY_FEATS, FRIENDLY_UPOS, QUIRKS
+from core.types import TranslationResult, LanguageCode
+from core.i18n import LANGUAGE_NAMES, OUTPUT_LABELS, FRIENDLY_FEATS, FRIENDLY_UPOS, QUIRKS
 
 
 def apply_friendly_mappings(

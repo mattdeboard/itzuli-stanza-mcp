@@ -6,12 +6,12 @@ Dokumentu honek itzuli-nlp proiektuaren arkitekturaren ikuspegi osoa eskaintzen 
 
 ## Proiektuaren Ikuspegi Orokorra
 
-Euskal hizkuntzaren prozesamendu sistema modular bat da, Itzuli APIaren itzulpen gaitasunak eta Stanford-en Stanza liburutegiko analisi morfologiko zehatza konbinatzen dituena. Sistemak berrerabilgarriak diren NLP osagaiak eta AI laguntzaileen integraziorako MCP (Model Context Protocol) zerbitzaria eskaintzen ditu.
+Euskal hizkuntzaren prozesamendu sistema modular bat da, Itzuli APIaren itzulpen gaitasunak eta Stanford-en Stanza liburutegiko analisi morfologiko zehatza konbinatzen dituena. Sistemak berrerabilgarriak diren NLP osagaiak, AI laguntzaileen integraziorako MCP (Model Context Protocol) zerbitzaria eta frontend aplikazioentzako lerrokatze datuak sortzeko HTTP API zerbitzaria eskaintzen ditu.
 
 ## Proiektuaren Egitura
 
 ```code
-itzuli_nlp/                # Berrerabilgarriak diren NLP liburutegi nagusia
+core/                      # Berrerabilgarriak diren NLP liburutegi nagusia
 ├── workflow.py            # Itzulpen eta analisi workflow nagusia
 ├── nlp.py                 # Stanza pipeline konfigurazioa eta testu prozesatzea
 ├── formatters.py          # Irteera formatuak (markdown, JSON, dict lista)
@@ -19,23 +19,42 @@ itzuli_nlp/                # Berrerabilgarriak diren NLP liburutegi nagusia
 ├── i18n.py                # Lokalizaturiko irteeraren nazioartekotze datuak
 └── __init__.py
 
-mcp_server/                # MCP-rentzako kodea
+mcp_server/                # AI laguntzaileen integraziorako MCP-rentzako kodea
 ├── server.py              # MCP tresna definizioak eta amaierako puntuak
 ├── services.py            # MCP itsaste geruza (bilgarri mehea)
 └── __init__.py
 
-scripts/                   # Tresna scriptak
+alignment_server/          # Frontend aplikazioentzako HTTP API
+├── server.py              # FastAPI HTTP zerbitzaria
+├── scaffold.py            # Lerrokatze scaffold sortzea
+├── types.py               # Lerrokatze-rentzako Pydantic mota zehatzak
+└── __init__.py
+
+tools/                     # Workflow tresnak eta scriptak
 ├── dual_analysis.py       # Jatorri eta itzulpen testua aztertzen du
+├── generate_scaffold.py   # Analisi bikoitzetik scaffoldak sortu
 ├── playground/            # Garapenerako/proba scriptak
 │   ├── itzuli_playground.py
 │   └── stanza_playground.py
 └── __init__.py
 
-tests/                     # Proba sorta
-├── test_itzuli_mcp_server.py # MCP zerbitzari probak
-├── test_workflow.py       # Workflow nagusi probak
-├── test_formatters.py     # Irteera formatu probak
-├── test_nlp.py            # NLP prozesamendu probak
+tests/                     # Osagaiaren arabera antolatutako proba sorta
+├── core/                  # Oinarrizko NLP funtzionalitate probak
+│   ├── test_workflow.py
+│   ├── test_formatters.py
+│   ├── test_nlp.py
+│   └── __init__.py
+├── mcp_server/            # MCP zerbitzari probak
+│   ├── test_itzuli_mcp_server.py
+│   └── __init__.py
+├── alignment_server/      # Lerrokatze zerbitzari probak
+│   ├── test_scaffold_manual.py
+│   ├── test_load_manual.py
+│   └── __init__.py
+├── tools/                 # Tresna eta utilitate probak
+│   └── __init__.py
+├── resources/             # Proba datu fitxategiak
+│   └── test_scaffold.json
 └── __init__.py
 
 pyproject.toml             # Proiektuaren dependentziak eta konfigurazioa
@@ -45,7 +64,7 @@ CLAUDE.md                  # Garapen gidalerroak
 
 ## Osagai Nagusiak
 
-### 1. NLP Liburutegi Nagusia (`itzuli_nlp/`)
+### 1. NLP Liburutegi Nagusia (`core/`)
 
 **Workflow Modulua (`workflow.py`)**
 
@@ -98,33 +117,68 @@ CLAUDE.md                  # Garapen gidalerroak
 - **Funtzioak**: `translate_with_analysis`, `get_quota`, `send_feedback`
 - **Diseinua**: Lehendik dauden MCP tresnentzako atzera bateragarritasuna mantentzen du
 
-### 3. Tresna Scriptak (`scripts/`)
+### 3. Lerrokatze Zerbitzaria (`alignment_server/`)
+
+**HTTP API Zerbitzaria (`server.py`)**
+
+- **Teknologia**: HTTP REST APIrako FastAPI
+- **Helburua**: Frontend aplikazioentzako lerrokatze scaffoldak sortu
+- **Amaiera-puntuak**: `/analyze`, `/scaffold`, `/analyze-and-scaffold`, `/health`
+- **Diseinua**: Hizkuntza bikoitzeko analiși eta lerrokatze datuen sortzearen REST API
+
+**Scaffold Sortzea Modulua (`scaffold.py`)**
+
+- **Helburua**: Analisi bikoitzaren irteera lerrokatze scaffoldetan bihurtu
+- **Funtzioak**: `create_scaffold_from_dual_analysis()`, `load_alignment_data()`, `save_alignment_data()`
+- **Diseinua**: Analisi linguistikoa Pydantic motetak jarraitzen dituen egituraturiko lerrokatze datuetan eraldatzen du
+- **Irteera**: Frontend bistaratzearentzako JSON lerrokatze datuak prest
+
+**Lerrokatze Motak Modulua (`types.py`)**
+
+- **Helburua**: Lerrokatze datu egituren Pydantic datu modeloak
+- **Motak**: `Token`, `TokenizedSentence`, `SentencePair`, `AlignmentData`
+- **Diseinua**: Lerrokatze datuen trukerako baliozkotasun zorrotza
+
+### 4. Workflow Tresnak (`tools/`)
 
 **Analisi Bikoitza Scripta (`dual_analysis.py`)**
 
 - **Helburua**: Jatorri eta itzulpen testua pipeline bereiziak erabiliz aztertu
-- **Erabilera**: `python -m scripts.dual_analysis "testua" --source eu --target en`
+- **Erabilera**: `python -m tools.dual_analysis "testua" --source eu --target en`
 - **Ezaugarriak**: Hizkuntza anitzeko Stanza analisia, JSON/taula irteera
 - **Diseinua**: NLP analisi aurreratuaren tresna independentea
+
+**Scaffold Sortzea Scripta (`generate_scaffold.py`)**
+
+- **Helburua**: Analisi bikoitzaren irteeratik lerrokatze scaffoldak sortu
+- **Erabilera**: `python -m tools.generate_scaffold "testua" --source eu --target en`
+- **Ezaugarriak**: Testu sarreratik amaiera arte scaffolds sortzea
+- **Diseinua**: Analisi bikoitza scaffold sorrerarkin konbinatzen du
 
 ## Sistemaren Arkitektura
 
 ```code
 ┌─────────────────┐    ┌──────────────────┐    ┌──────────────────┐
 │  MCP Bezeroa    │───▶│  MCP Zerbitzaria │───▶│ mcp_server/      │
-│ (AI Laguntzailea)│    │    (stdio)       │    │ services.py      │
+│(AI Laguntzailea)│    │    (stdio)       │    │ services.py      │
+└─────────────────┘    └──────────────────┘    └──────────────────┘
+                                                        │
+                                                        ▼
+┌─────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│ Frontend App    │───▶│  HTTP API Server │───▶│ alignment_server/│
+│ (Lerrokatze UI) │    │    (8000 portua) │    │ server.py        │
 └─────────────────┘    └──────────────────┘    └──────────────────┘
                                                         │
                                                         ▼
 ┌─────────────────┐                           ┌──────────────────┐
-│ Zuzeneko Erabil │──────────────────────────▶│ itzuli_nlp/      │
-│ (script,app-ak) │                           │ workflow.py      │
+│ Zuzeneko Erabil │──────────────────────────▶│ core/            │
+│(script,tresnak) │                           │ workflow.py      │
 └─────────────────┘                           └──────────────────┘
                                                         │
                               ┌─────────────────────────┼─────────────────────────┐
                               ▼                         ▼                         ▼
                    ┌──────────────────┐       ┌──────────────────┐       ┌──────────────────┐
-                   │  Itzuli API      │       │ itzuli_nlp/      │       │ itzuli_nlp/      │
+                   │  Itzuli API      │       │ core/            │       │ core/            │
                    │ (Itzulpena)      │       │ nlp.py           │       │ formatters.py    │
                    └──────────────────┘       └──────────────────┘       └──────────────────┘
 ```
@@ -143,14 +197,37 @@ CLAUDE.md                  # Garapen gidalerroak
 8. Zerbitzu geruzak formatu egokia deitzen du (markdown taula MCP-rentzat)
 9. Formateatutako emaitza MCP bezeroari itzultzen zaio
 
+### HTTP API Fluxua (Lerrokatze Zerbitzaria)
+
+Frontend aplikazioak lerrokatze datuak sortzerakoan:
+
+1. Frontend aplikazioak HTTP POST egiten du `/analyze-and-scaffold`-era
+2. `alignment_server/server.py`-k eskaera jasotzen du testu eta hizkuntza parametroekin
+3. Zerbitzariak `tools.dual_analysis.analyze_both_texts()` deitzen du analisi bikoitzerako
+4. Analisi bikoitzak jatorri eta xede hizkuntzarentzako pipeline bereiziak sortzen ditu
+5. Jatorri eta itzulpen testua pipeline egokien bidez prozesatzen dira
+6. Zerbitzariak `alignment_server.scaffold.create_scaffold_from_dual_analysis()` deitzen du
+7. Scaffold sorreak analisi emaitzak lerrokatze datu egituraretan bihurtzen ditu
+8. Pydantic baliozkotasunak datuak `AlignmentData` eskemari jarraitzen zaizkiola ziurtatzen du
+9. JSON erantzuna frontend aplikazioari itzultzen zaio
+
 ### Erabilera Alternatiboa (Workflow Zuzena)
 
 MCP ez diren aplikazioetarako:
 
-1. Aplikazioak `process_translation_with_analysis()` zuzenean deitzen du
-2. Workflow-ak TranslationResult egituratu itzultzen du
-3. Aplikazioak formatu hautatzen du: markdown, JSON edo dict lista
-4. Formateatutako irteera behar den bezala erabiltzen da
+1. Aplikazioak `core.workflow` edo `core.nlp` zuzenean inportatzen du
+2. Oinarrizko funtzioak deitzen ditu `process_translation_with_analysis()` bezalakoak
+3. Egituraturiko datuak jasotzen ditu (`TranslationResult`, `List[AnalysisRow]`)
+4. Aplikazioak formatu hautatzen du: markdown, JSON edo dict lista
+5. Formateatutako irteera behar den bezala erabiltzen da
+
+### Analisi Bikoitza Fluxua (tools/dual_analysis.py)
+
+1. Scriptak Itzuli API deitzen du itzulpenerako
+2. Jatorri eta xede hizkuntzarentzako Stanza pipeline bereiziak sortzen ditu
+3. Jatorri eta itzulpen testua pipeline egokien bidez prozesatzen ditu
+4. Hizkuntza bakoitzerako `List[AnalysisRow]` bereiziak itzultzen ditu
+5. Bi testuen analisi morfologikoa erakusten duen irteera formateatzen du
 
 ## Kanpoko Integrazioak
 
@@ -207,7 +284,13 @@ ITZULI_API_KEY=zure-gakoa uv run python -m mcp_server.server
 ### Analisi Bikoitza Scripta**
 
 ```bash
-uv run python -m scripts.dual_analysis "Kaixo mundua" --source eu --target en --format table
+uv run python -m tools.dual_analysis "Kaixo mundua" --source eu --target en --format table
+```
+
+### Lerrokatze Zerbitzaria
+
+```bash
+uv run python -m alignment_server.server
 ```
 
 ## Etorkizuneko Kontuan hartu beharrekoak
@@ -217,7 +300,10 @@ uv run python -m scripts.dual_analysis "Kaixo mundua" --source eu --target en --
 - Itzuli APIak euskarria zabaltzen badu hizkuntza bikote gehigarriak
 - Irteera formatu gehigarriak (XML, CSV, etab.) erraz gehitu daitezke
 - Egitura modularrak itzulpen soilerako edo analisi soilerako erabilera kasuen tresna banandu eraikitzea ahalbidetzen du
-- scripts/ direktorioa tresna gehigarriekin zabaltzea kontuan hartu
+- tools/ direktorioa tresna gehigarriekin zabaltzea kontuan hartu
+- Lerrokatze zerbitzariak esaldi bikote anitzarentzako batch scaffold sorrera euskarri dezake
+- HTTP APIari autentifikazioa eta abiadura mugaketa gehitzea kontuan hartu
+- Denbora errealeko lerrokatze kolaboraziorako WebSocket euskarriaren potentziala
 - Hizkuntza anitzeko analisi gaitasunak unean onartutako hizkuntzez haratago zabaldu daitezke
 
 ## Glosarioa

@@ -1,7 +1,7 @@
 import json
 
-from itzuli_nlp.types import AnalysisRow, TranslationResult
-from itzuli_nlp.formatters import (
+from core.types import AnalysisRow, TranslationResult
+from core.formatters import (
     format_as_markdown_table,
     format_as_json,
     format_as_dict_list,

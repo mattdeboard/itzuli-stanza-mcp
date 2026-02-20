@@ -8,8 +8,8 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
 from mcp_server import services
-from itzuli_nlp.types import LanguageCode
-from itzuli_nlp.i18n import LANGUAGE_NAMES
+from core.types import LanguageCode
+from core.i18n import LANGUAGE_NAMES
 
 load_dotenv()
 
