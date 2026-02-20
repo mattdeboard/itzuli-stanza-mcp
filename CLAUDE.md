@@ -86,3 +86,4 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
   - Never use `pip` or `pip-tools`
 - Always ensure the virtual env is active before e.g. installing/removing deps, running code, etc.
   - The command to activate the virtual env is `source <project_dir>/.venv/bin/activate`
+- Always prefer a functional, rather than class-oriented, approach to implementations.
