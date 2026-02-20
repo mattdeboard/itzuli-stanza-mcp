@@ -20,9 +20,25 @@ Egitura osoaren xehetasunetarako ikus [ARCHITECTURE.eu.md](./ARCHITECTURE.eu.md)
 ```code
 itzuli_stanza_mcp/
   itzuli_mcp_server.py   # MCP zerbitzaria itzulpena eta analisi morfologikoarekin
-  services.py            # Itzuli eta Stanza koordinatzen dituen zerbitzu geruza
-  nlp.py                 # Stanza pipelinearen konfigurazioa eta testu prozesamendu
+  services.py            # MCP-rentzako itsaste geruza
+  workflow.py            # Itzulpen eta analisi workflow nagusia (berrerabilgarria)
+  formatters.py          # Irteera formatuak (markdown, JSON, dict lista)
+  nlp.py                 # Stanza pipeline eta testu prozesatzea
+  i18n.py                # Nazioartekotze datuak
 ```
+
+## Berrerabilgarriak diren Osagaiak
+
+Itzulpen eta analisi funtzionalitate nagusia MCP zerbitzariaz haratago berrerabilgarria izateko diseinatu da:
+
+- **`workflow.py`** — `process_translation_with_analysis()` funtzio nagusia dauka, edozein Python aplikazioan modu independentean erabil daitekeena. Itzulpen emaitzak eta analisi morfologikoa dituen egituraturiko datuak itzultzen ditu.
+
+- **`formatters.py`** — Itzulpen emaitzen irteera formatu anitzak eskaintzen ditu:
+  - `format_as_markdown_table()` — 100 zutabeko orratzarekin formatutako taula
+  - `format_as_json()` — Itzulpen eta analisi datu guztiak dituen JSON irteera
+  - `format_as_dict_list()` — Erabilera programatikorako Python hiztegi zerrenda
+
+Banaketa honek itzuli+stanza funtzionalitatea beste aplikazioetan integratzea ahalbidetzen du IA laguntzailearentzako MCP zerbitzari interfazea mantentzen duen bitartean.
 
 ## Itzuli Itzulpen MCP Zerbitzaria
 
