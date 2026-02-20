@@ -298,7 +298,7 @@ class TestMainBlock:
             # Execute the main block directly by running the module
             result = subprocess.run(
                 [sys.executable, "-m", "alignment_server.server"],
-                cwd="/Users/mdeboard/projects/stanza-server",
+                cwd=os.getcwd(),
                 env={**os.environ, "PORT": "9000", "HOST": "127.0.0.1", "ITZULI_API_KEY": "test-key"},
                 capture_output=True,
                 text=True,
