@@ -1,8 +1,8 @@
-# itzuli-stanza-mcp
+# itzuli-nlp
 
 [🇺🇸 English](README.md) | [🔴⚪🟢 Euskera](README.eu.md)
 
-Basque language processing toolkit that combines translation capabilities from the [Itzuli](https://www.euskadi.eus/itzuli/) API with detailed morphological analysis via [Stanza](https://stanfordnlp.github.io/stanza/). The system provides both translation services and enriched linguistic analysis, packaged as HTTP and MCP servers.
+Basque language processing toolkit that combines translation capabilities from the [Itzuli](https://www.euskadi.eus/itzuli/) API with detailed morphological analysis via [Stanza](https://stanfordnlp.github.io/stanza/). The system provides reusable NLP components and an MCP server for AI assistant integration.
 
 ## Overview
 
@@ -18,27 +18,38 @@ The services can be used independently or together to provide comprehensive Basq
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for full details on project structure.
 
 ```code
-itzuli_stanza_mcp/
-  itzuli_mcp_server.py   # MCP server providing translation with morphological analysis
-  services.py            # MCP-specific glue layer
-  workflow.py            # Core translation+analysis workflow (reusable)
+itzuli_nlp/              # Core reusable NLP library
+  workflow.py            # Core translation+analysis workflow
+  nlp.py                 # Stanza pipeline and text processing  
   formatters.py          # Output formatting (markdown, JSON, dict list)
-  nlp.py                 # Stanza pipeline and text processing
+  types.py               # Shared data types
   i18n.py                # Internationalization data
+
+mcp_server/              # MCP-specific code
+  server.py              # MCP tool definitions
+  services.py            # MCP glue layer
+
+scripts/                 # Utility scripts
+  dual_analysis.py       # Analyzes both source & translation text
+  playground/            # Development/testing scripts
 ```
 
 ## Reusable Components
 
 The core translation and analysis functionality has been designed for reusability beyond the MCP server context:
 
-- **`workflow.py`** — Contains the core `process_translation_with_analysis()` function that can be used independently in any Python application. Returns structured data with translation results and morphological analysis.
+- **`itzuli_nlp.workflow`** — Contains the core `process_translation_with_analysis()` function that can be used independently in any Python application. Returns structured `TranslationResult` data.
 
-- **`formatters.py`** — Provides multiple output formats for translation results:
+- **`itzuli_nlp.nlp`** — Provides `process_raw_analysis()` for morphological analysis and `create_pipeline()` for multi-language Stanza pipelines.
+
+- **`itzuli_nlp.formatters`** — Multiple output formats for translation results:
   - `format_as_markdown_table()` — Formatted table with 100-column wrapping
   - `format_as_json()` — JSON output with full translation and analysis data
   - `format_as_dict_list()` — Python list of dictionaries for programmatic use
 
-This separation enables integration of itzuli+stanza functionality into other applications while maintaining the MCP server interface for AI assistant integration.
+- **`scripts/dual_analysis.py`** — Utility script that analyzes both source and translated text using separate Stanza pipelines for each language.
+
+This modular structure enables integration of itzuli+stanza functionality into other applications while maintaining clean separation between core NLP logic and MCP server concerns.
 
 ## Itzuli Translation MCP Server
 
@@ -54,7 +65,19 @@ To use the Itzuli translation service, you need an API key:
 Runs over stdio transport.
 
 ```bash
-ITZULI_API_KEY=your-key uv run python -m itzuli_stanza_mcp.itzuli_mcp_server
+ITZULI_API_KEY=your-key uv run python -m mcp_server.server
+```
+
+### Utility Scripts
+
+**Dual Analysis Script** — Analyze both source and translated text:
+
+```bash
+# Analyze both Basque source and English translation
+uv run python -m scripts.dual_analysis "Kaixo mundua" --source eu --target en --format table
+
+# JSON output for programmatic use
+uv run python -m scripts.dual_analysis "Hello world" --source en --target eu --format json
 ```
 
 ### Tools

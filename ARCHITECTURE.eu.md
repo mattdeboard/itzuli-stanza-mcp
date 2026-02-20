@@ -2,28 +2,42 @@
 
 [🇺🇸 English](ARCHITECTURE.md) | [🔴⚪🟢 Euskera](ARCHITECTURE.eu.md)
 
-Dokumentu honek itzuli-stanza-mcp proiektuaren arkitekturaren ikuspegi osoa eskaintzen du.
+Dokumentu honek itzuli-nlp proiektuaren arkitekturaren ikuspegi osoa eskaintzen du.
 
 ## Proiektuaren Ikuspegi Orokorra
 
-Euskal hizkuntzaren prozesamendu sistema bat da, Itzuli APIaren itzulpen gaitasunak eta Stanford-en Stanza liburutegiko analisi morfologiko zehatza konbinatzen dituena. Sistemak AI laguntzaileen integraziorako MCP (Model Context Protocol) zerbitzaria eskaintzen du, itzulpena eta analisi linguistikoa interfaze bakardun batean eskainiz.
+Euskal hizkuntzaren prozesamendu sistema modular bat da, Itzuli APIaren itzulpen gaitasunak eta Stanford-en Stanza liburutegiko analisi morfologiko zehatza konbinatzen dituena. Sistemak berrerabilgarriak diren NLP osagaiak eta AI laguntzaileen integraziorako MCP (Model Context Protocol) zerbitzaria eskaintzen ditu.
 
 ## Proiektuaren Egitura
 
 ```code
-itzuli_stanza_mcp/
-├── itzuli_mcp_server.py   # Analisi morfologikoarekin itzulpena eskaintzen duen MCP zerbitzaria
-├── services.py            # MCP-rentzako itsaste geruza
-├── workflow.py            # Itzulpen eta analisi workflow nagusia (berrerabilgarria)
+itzuli_nlp/                # Berrerabilgarriak diren NLP liburutegi nagusia
+├── workflow.py            # Itzulpen eta analisi workflow nagusia
+├── nlp.py                 # Stanza pipeline konfigurazioa eta testu prozesatzea
 ├── formatters.py          # Irteera formatuak (markdown, JSON, dict lista)
-├── nlp.py                 # Stanza pipelinearen konfigurazioa eta testu prozesamendu logika
+├── types.py               # Partekatutako datu motak (AnalysisRow, TranslationResult)
 ├── i18n.py                # Lokalizaturiko irteeraren nazioartekotze datuak
 └── __init__.py
-tests/
-├── test_itzuli_mcp_server.py
-├── test_workflow.py       # Workflow nagusiaren funtzionalitaterako probak
-├── test_formatters.py     # Irteera formatuetarako probak
+
+mcp_server/                # MCP-rentzako kodea
+├── server.py              # MCP tresna definizioak eta amaierako puntuak
+├── services.py            # MCP itsaste geruza (bilgarri mehea)
 └── __init__.py
+
+scripts/                   # Tresna scriptak
+├── dual_analysis.py       # Jatorri eta itzulpen testua aztertzen du
+├── playground/            # Garapenerako/proba scriptak
+│   ├── itzuli_playground.py
+│   └── stanza_playground.py
+└── __init__.py
+
+tests/                     # Proba sorta
+├── test_itzuli_mcp_server.py # MCP zerbitzari probak
+├── test_workflow.py       # Workflow nagusi probak
+├── test_formatters.py     # Irteera formatu probak
+├── test_nlp.py            # NLP prozesamendu probak
+└── __init__.py
+
 pyproject.toml             # Proiektuaren dependentziak eta konfigurazioa
 README.md                  # Erabiltzaile dokumentazioa
 CLAUDE.md                  # Garapen gidalerroak
@@ -31,71 +45,87 @@ CLAUDE.md                  # Garapen gidalerroak
 
 ## Osagai Nagusiak
 
-### 1. Itzulpen Zerbitzua (`itzuli_mcp_server.py`)
+### 1. NLP Liburutegi Nagusia (`itzuli_nlp/`)
 
-- **Teknologia**: FastMCP duen MCP (Model Context Protocol) zerbitzaria
-- **Helburua**: AI laguntzaileen itzulpen eta analisi morfologiko konbinatua
-- **Garraioa**: stdio
-- **Autentifikazioa**: `ITZULI_API_KEY` ingurumen aldagaia behar du
-- **Dependentziak**: koordinazio prozesurako `services.py`
-
-### 2. Workflow Modulua Nagusia (`workflow.py`)
+**Workflow Modulua (`workflow.py`)**
 
 - **Helburua**: Itzulpen + analisiaren berrerabilgarriak diren negozio logika nagusia
-- **Eredua**: Egituraturiko datuak itzultzen dituzten funtzio garbitak
 - **Funtzio Nagusia**: `process_translation_with_analysis()` - Itzuli + Stanza koordinatzen ditu
-- **Diseinua**: Framework-agnostikoa, MCP testuingurutik kanpo erabil daiteke
+- **Diseinua**: Framework-agnostikoa, egituraturiko `TranslationResult` datuak itzultzen ditu
 - **Mendekotasunak**: Itzuli API, Stanza pipeline, NLP prozesatzea
 
-### 3. Irteera Formatu Modulua (`formatters.py`)
+**NLP Prozesamendu Modulua (`nlp.py`)**
 
-- **Helburua**: Itzulpen emaitzen irteera formatu anitzak
+- **Teknologia**: Stanford Stanza liburutegia hizkuntza anitzeko euskarriarekin
+- **Funtzioak**: `create_pipeline(language)`, `process_raw_analysis()`
+- **Pipeline**: tokenizazioa, POS etiketatua, lematizazioa
+- **Ezaugarriak**: Stanza irteera gordina mota duten `AnalysisRow` objektu gisa
+
+**Irteera Formatu Modulua (`formatters.py`)**
+
+- **Helburua**: Itzulpen emaitzen irteera formatu anitzeko euskarria
 - **Funtzioak**:
   - `format_as_markdown_table()` - 100 zutabeko orratzarekin formatutako taula
   - `format_as_json()` - Datu guztiak dituen JSON irteera
-  - `format_as_dict_list()` - Erabilera programatikorako Python hiztegirik
-- **Diseinua**: Workflow emaitza egituratuak onartzen dituzten funtzio garbitak
+  - `format_as_dict_list()` - Erabilera programatikorako Python hiztegiak
+- **Diseinua**: Ezaugarri adiskidetsuen mapeatzearekin funtzio garbitak
 
-### 4. Zerbitzu Koordinazio Geruza (`services.py`)
+**Motak Modulua (`types.py`)**
 
-- **Helburua**: workflow + formatua konbinatzen dituen MCP-rentzako itsaste geruza
-- **Eredua**: MCP zerbitzariarentzako wrapper funtzio meheak
-- **Funtzioak**: `translate_with_analysis`, `get_quota`, `send_feedback`
-- **Diseinua**: Dauden MCP tresnen atzeranzko bateragarritasuna mantentzen du
+- **Helburua**: Zirkularriak diren inportazioak saihesteko partekatutako datu egiturak
+- **Motak**: `AnalysisRow`, `TranslationResult`, `LanguageCode`
+- **Diseinua**: Mota segurtasunerako dataclass sinpleak
 
-### 5. NLP Prozesamendu Modulua (`nlp.py`)
+**Nazioartekotze Modulua (`i18n.py`)**
 
-- **Teknologia**: Stanford Stanza liburutegia
-- **Helburua**: Euskal hizkuntzaren prozesamendu eta ezaugarri ateratze
-- **Pipeline**: tokenizazioa, POS etiketatua, lematizazioa
-- **Ezaugarriak**: Ohartapen linguistikoen ezaugarri-mapa lagungarria
-
-### 6. Nazioartekotze Modulua (`i18n.py`)
-
-- **Helburua**: Etiketak eta hizkuntza izenak lokalizatuak
+- **Helburua**: Lokalizaturiko etiketak eta hizkuntza izenak
 - **Hizkuntzak**: Ingelesa, euskera, gaztelania, frantsesa
-- **Datuak**: Irteera etiketak, hizkuntza izenak, ezaugarri deskribapen lagungarriak
-- **Erabilera**: Hainbat hizkuntzatan lokalizaturiko analisi irteerak onartzen ditu
+- **Datuak**: Irteera etiketak, hizkuntza izenak, ezaugarri adiskidetsuen deskribapenak
+
+### 2. MCP Zerbitzaria (`mcp_server/`)
+
+**Zerbitzari Modulua (`server.py`)**
+
+- **Teknologia**: FastMCP duen MCP (Model Context Protocol) zerbitzaria
+- **Helburua**: AI laguntzaileen integrazioa itzulpen eta analisi tresnekin
+- **Garraioa**: stdio
+- **Autentifikazioa**: `ITZULI_API_KEY` ingurumen aldagaia behar du
+
+**Zerbitzu Koordinazio Geruza (`services.py`)**
+
+- **Helburua**: Workflow nagusia + formatua konbinatzen duen MCP-rentzako itsaste geruza
+- **Eredua**: MCP zerbitzarirako bilgarri funtzio meheak
+- **Funtzioak**: `translate_with_analysis`, `get_quota`, `send_feedback`
+- **Diseinua**: Lehendik dauden MCP tresnentzako atzera bateragarritasuna mantentzen du
+
+### 3. Tresna Scriptak (`scripts/`)
+
+**Analisi Bikoitza Scripta (`dual_analysis.py`)**
+
+- **Helburua**: Jatorri eta itzulpen testua pipeline bereiziak erabiliz aztertu
+- **Erabilera**: `python -m scripts.dual_analysis "testua" --source eu --target en`
+- **Ezaugarriak**: Hizkuntza anitzeko Stanza analisia, JSON/taula irteera
+- **Diseinua**: NLP analisi aurreratuaren tresna independentea
 
 ## Sistemaren Arkitektura
 
 ```code
 ┌─────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-│  MCP Bezeroa    │───▶│  MCP Zerbitzaria │───▶│  Zerbitzu Geruza │
-│ (AI Laguntzailea)│    │    (stdio)       │    │  (MCP itsaste)   │
+│  MCP Bezeroa    │───▶│  MCP Zerbitzaria │───▶│ mcp_server/      │
+│ (AI Laguntzailea)│    │    (stdio)       │    │ services.py      │
 └─────────────────┘    └──────────────────┘    └──────────────────┘
                                                         │
                                                         ▼
-                                                ┌──────────────────┐
-                                                │ Workflow Modulua │
-                                                │ (Logika Nagusia) │
-                                                └──────────────────┘
+┌─────────────────┐                           ┌──────────────────┐
+│ Zuzeneko Erabil │──────────────────────────▶│ itzuli_nlp/      │
+│ (script,app-ak) │                           │ workflow.py      │
+└─────────────────┘                           └──────────────────┘
                                                         │
                               ┌─────────────────────────┼─────────────────────────┐
                               ▼                         ▼                         ▼
                    ┌──────────────────┐       ┌──────────────────┐       ┌──────────────────┐
-                   │  Itzuli API      │       │ Stanza Pipeline  │       │ Formatuak        │
-                   │ (Itzulpena)      │       │   (Analisia)     │       │ (Mota Anitzak)   │
+                   │  Itzuli API      │       │ itzuli_nlp/      │       │ itzuli_nlp/      │
+                   │ (Itzulpena)      │       │ nlp.py           │       │ formatters.py    │
                    └──────────────────┘       └──────────────────┘       └──────────────────┘
 ```
 
@@ -116,6 +146,7 @@ CLAUDE.md                  # Garapen gidalerroak
 ### Erabilera Alternatiboa (Workflow Zuzena)
 
 MCP ez diren aplikazioetarako:
+
 1. Aplikazioak `process_translation_with_analysis()` zuzenean deitzen du
 2. Workflow-ak TranslationResult egituratu itzultzen du
 3. Aplikazioak formatu hautatzen du: markdown, JSON edo dict lista
@@ -132,10 +163,11 @@ MCP ez diren aplikazioetarako:
 
 ### Stanford Stanza
 
-- **Helburua**: Euskal analisi morfologikoa
-- **Modeloa**: Aurre-entrenatutako euskal hizkuntza modeloa
+- **Helburua**: Hizkuntza anitzeko analisi morfologikoa
+- **Modeloak**: Aurre-entrenatutako hizkuntza modeloak (euskera, ingelesa, gaztelania, frantsesa)
 - **Deskarga Estrategia**: Lehendik dauden baliabideak berrerabili
-- **Prozesatzaileak**: tokenizazioa, pos, lemma
+- **Prozesatzaileak**: tokenizazioa, pos, lemma (+ mwt hizkuntza batzuentzat)
+- **Erabilera**: Analisi zehatzerako hizkuntza bakoitzeko pipeline bereiziak sortzen dira
 
 ## Segurtasun Kontuan hartu beharrekoak
 
@@ -164,12 +196,18 @@ MCP ez diren aplikazioetarako:
 - Type hint-ak aplikagarri denean
 - Logging ingurumen aldagaien bidez konfiguratua
 
-## Hedapena
+## Erabilera
 
-### MCP Zerbitzaria
+### MCP Zerbitzaria**
 
 ```bash
-ITZULI_API_KEY=zure-gakoa uv run python -m itzuli_stanza_mcp.itzuli_mcp_server
+ITZULI_API_KEY=zure-gakoa uv run python -m mcp_server.server
+```
+
+### Analisi Bikoitza Scripta**
+
+```bash
+uv run python -m scripts.dual_analysis "Kaixo mundua" --source eu --target en --format table
 ```
 
 ## Etorkizuneko Kontuan hartu beharrekoak
@@ -178,7 +216,9 @@ ITZULI_API_KEY=zure-gakoa uv run python -m itzuli_stanza_mcp.itzuli_mcp_server
 - Maiztasunez analizatutako testuetarako cache geruza potentziala
 - Itzuli APIak euskarria zabaltzen badu hizkuntza bikote gehigarriak
 - Irteera formatu gehigarriak (XML, CSV, etab.) erraz gehitu daitezke
-- Workflow moduluak itzulpen soiletik edo analisi soilerako erabilera kasuen tresna banandu eraikitzea ahalbidetzen du
+- Egitura modularrak itzulpen soilerako edo analisi soilerako erabilera kasuen tresna banandu eraikitzea ahalbidetzen du
+- scripts/ direktorioa tresna gehigarriekin zabaltzea kontuan hartu
+- Hizkuntza anitzeko analisi gaitasunak unean onartutako hizkuntzez haratago zabaldu daitezke
 
 ## Glosarioa
 
