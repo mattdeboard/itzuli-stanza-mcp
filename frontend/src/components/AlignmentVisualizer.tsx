@@ -26,6 +26,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
   const [animatingRibbons, setAnimatingRibbons] = useState<Set<number>>(new Set())
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState<boolean>(false)
   const [vizLayer, setVizLayer] = useState<LayerType>(LayerType.LEXICAL)
+  const [showLabels, setShowLabels] = useState<boolean>(false)
 
   const updateTokenPositions = useCallback(() => {
     if (!containerRef.current) return
@@ -99,6 +100,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     setAnimatingRibbons(new Set())
     setPinnedTokenId(null)
     setPinnedIsSource(false)
+    setShowLabels(false)
   }, [sentencePair])
 
   // Trigger initial animations when lexical layer loads
@@ -202,6 +204,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
 
     setHoveredTokens(newHoveredTokens)
     setHighlightedAlignments(newHighlightedAlignments)
+    setShowLabels(true)
   }, [sentencePair.layers[vizLayer], pinnedTokenId, pinnedIsSource, highlightedAlignments])
 
   const handleTokenLeave = useCallback(() => {
@@ -230,6 +233,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
       setHoveredTokens(new Set())
       setHighlightedAlignments(new Set())
       setAnimatingRibbons(new Set())
+      setShowLabels(false)
     }
   }, [pinnedTokenId, pinnedIsSource, sentencePair.layers[vizLayer]])
 
@@ -242,6 +246,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
       setHoveredTokens(new Set())
       setHighlightedAlignments(new Set())
       setAnimatingRibbons(new Set())
+      setShowLabels(false)
     } else {
       // Pin this token
       setPinnedTokenId(tokenId)
@@ -281,6 +286,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
 
       setHoveredTokens(newHoveredTokens)
       setHighlightedAlignments(newHighlightedAlignments)
+      setShowLabels(true)
     }
   }, [pinnedTokenId, sentencePair.layers[vizLayer]])
 
@@ -589,7 +595,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
               label={alignment.label}
               currentLayer={vizLayer}
               index={index}
-              visible={highlightedAlignments.has(index)}
+              visible={showLabels && highlightedAlignments.has(index)}
             />
           ))}
         </div>
