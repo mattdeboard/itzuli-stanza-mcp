@@ -24,6 +24,12 @@ export const LAYER_CONFIGS: Record<LayerType, LayerConfig> = {
   }
 }
 
+const LAYER_TOOLTIPS: Record<LayerType, string> = {
+  [LayerType.LEXICAL]: "What words mean — dictionary-level correspondences between English words and their direct Basque equivalents, if applicable",
+  [LayerType.GRAMMATICAL_RELATIONS]: "Who does what to whom — how English marks sentence roles through word order while Basque marks them through case suffixes and verb agreement",
+  [LayerType.FEATURES]: "Where grammar hides — how tense, negation, definiteness, and agreement that live in one place in English get scattered across Basque words"
+}
+
 type LayerPickerProps = {
   currentLayer: LayerType
   setVizLayer: (layer: LayerType) => void
@@ -39,12 +45,20 @@ export function LayerPicker({ currentLayer, setVizLayer }: LayerPickerProps) {
             <button
               key={layerKey}
               onClick={() => setVizLayer(layerKey as LayerType)}
+              title={LAYER_TOOLTIPS[layerKey as LayerType]}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border-2 flex items-center gap-2 ${
                 isActive
-                  ? 'border-current text-white shadow-md'
-                  : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                  ? 'text-white shadow-md'
+                  : 'hover:shadow-sm'
               }`}
-              style={isActive ? { backgroundColor: config.color, borderColor: config.color } : {}}
+              style={isActive 
+                ? { backgroundColor: config.color, borderColor: config.color } 
+                : { 
+                    backgroundColor: `${config.color}20`, 
+                    borderColor: config.color, 
+                    color: config.color 
+                  }
+              }
             >
               <div
                 className="w-3 h-3 rounded-full"
