@@ -187,19 +187,14 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
       pinnedAlignments.forEach(idx => newHighlightedAlignments.add(idx))
     }
 
-    // Start staggered animations for all connected alignments
-    // First, clear any existing animations for these ribbons
+    // Start animations for all connected alignments immediately (no stagger for user interactions)
     setAnimatingRibbons(prev => {
       const newSet = new Set(prev)
-      connectedAlignments.forEach(idx => newSet.delete(idx))
+      connectedAlignments.forEach(idx => {
+        newSet.delete(idx) // Clear existing
+        newSet.add(idx) // Add back immediately
+      })
       return newSet
-    })
-
-    // Then start staggered animations with delays
-    connectedAlignments.forEach((alignmentIndex, order) => {
-      setTimeout(() => {
-        setAnimatingRibbons(prev => new Set([...prev, alignmentIndex]))
-      }, order * 100 + 10) // Small delay for stagger
     })
 
     setHoveredTokens(newHoveredTokens)
@@ -269,19 +264,14 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
         }
       })
 
-      // Start staggered animations for pinned state
-      // First, clear any existing animations for these ribbons
+      // Start animations for pinned state immediately (no stagger for user interactions)
       setAnimatingRibbons(prev => {
         const newSet = new Set(prev)
-        connectedAlignments.forEach(idx => newSet.delete(idx))
+        connectedAlignments.forEach(idx => {
+          newSet.delete(idx) // Clear existing
+          newSet.add(idx) // Add back immediately
+        })
         return newSet
-      })
-
-      // Then start staggered animations with delays
-      connectedAlignments.forEach((alignmentIndex, order) => {
-        setTimeout(() => {
-          setAnimatingRibbons(prev => new Set([...prev, alignmentIndex]))
-        }, order * 100 + 10)
       })
 
       setHoveredTokens(newHoveredTokens)
