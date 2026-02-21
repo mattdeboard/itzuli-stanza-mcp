@@ -66,8 +66,6 @@
       },
       "layers": {
         "lexical": [
-          { "source": [ "s0" ], "target": [ "t3" ], "label": "gave → eman (core meaning)" },
-          { "source": [ "s4", "s5", "s6" ], "target": [ "t3" ], "label": "gave → eman (core meaning)" },
           { "source": [ "s1" ], "target": [ "t2" ], "label": "gave → eman (core meaning)" },
           { "source": [ "s3" ], "target": [ "t4" ], "label": "book → liburu (in 'liburua')" },
           { "source": [ "s6" ], "target": [ "t1" ], "label": "friend → lagun (in 'lagunari')" },

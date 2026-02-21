@@ -502,7 +502,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
         <div className="text-lg text-slate-800 mb-4 italic">
           {sentencePair.source.text}
         </div>
-        <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex gap-3 items-center overflow-x-auto pb-2">
           {sentencePair.source.tokens.map((token) => {
             const isHovered = hoveredTokens.has(token.id)
             const isDimmed = hoveredTokens.size > 0 && !isHovered
@@ -514,7 +514,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
             return (
               <span
                 key={token.id}
-                className={`token ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--source' : ''} ${isPinned ? 'token--pinned' : ''}`}
+                className={`token flex-shrink-0 ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--source' : ''} ${isPinned ? 'token--pinned' : ''}`}
                 data-token-id={token.id}
                 data-token-type="source"
                 onMouseEnter={() => handleTokenHover(token.id, true)}
@@ -548,7 +548,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
 
       {/* Target Sentence */}
       <div className="px-8 pt-0 pb-6 bg-gray-50 rounded-b-lg mx-8">
-        <div className="flex flex-wrap gap-3 items-center mb-2">
+        <div className="flex gap-3 items-center mb-2 overflow-x-auto pt-2">
           {sentencePair.target.tokens.map((token) => {
             const isHovered = hoveredTokens.has(token.id)
             const isDimmed = hoveredTokens.size > 0 && !isHovered
@@ -560,7 +560,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
             return (
               <span
                 key={token.id}
-                className={`token ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--target' : ''} ${isPinned ? 'token--pinned' : ''}`}
+                className={`token flex-shrink-0 ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--target' : ''} ${isPinned ? 'token--pinned' : ''}`}
                 data-token-id={token.id}
                 data-token-type="target"
                 onMouseEnter={() => handleTokenHover(token.id, false)}
