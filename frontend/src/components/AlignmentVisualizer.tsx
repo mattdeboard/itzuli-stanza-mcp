@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { type SentencePair, type Alignment, LayerType } from '../types/alignment'
 import { LayerPicker, LAYER_CONFIGS } from './LayerPicker'
+import { AlignmentLabel } from './AlignmentLabel'
 
 type TokenPosition = {
   id: string
@@ -309,9 +310,9 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     const isManyToMany = alignmentSourcePositions.length > 1 || alignmentTargetPositions.length > 1
 
     if (isManyToMany) {
-      return createManyToManyRibbon(alignmentSourcePositions, alignmentTargetPositions, ribbonRect, index)
+      return createManyToManyRibbon(alignmentSourcePositions, alignmentTargetPositions, ribbonRect, index, alignment)
     } else {
-      return createSimpleRibbon(alignmentSourcePositions[0], alignmentTargetPositions[0], ribbonRect, index)
+      return createSimpleRibbon(alignmentSourcePositions[0], alignmentTargetPositions[0], ribbonRect, index, alignment)
     }
   }
 
@@ -413,7 +414,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     }
   }
 
-  const createSimpleRibbon = (sourcePos: TokenPosition, targetPos: TokenPosition, ribbonRect: DOMRect, index: number) => {
+  const createSimpleRibbon = (sourcePos: TokenPosition, targetPos: TokenPosition, ribbonRect: DOMRect, index: number, alignment?: Alignment) => {
     const ribbon = createSingleRibbon(sourcePos, targetPos, ribbonRect, index)
 
     return (
@@ -425,7 +426,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     )
   }
 
-  const createManyToManyRibbon = (sourcePositions: TokenPosition[], targetPositions: TokenPosition[], ribbonRect: DOMRect, index: number) => {
+  const createManyToManyRibbon = (sourcePositions: TokenPosition[], targetPositions: TokenPosition[], ribbonRect: DOMRect, index: number, alignment?: Alignment) => {
     const ribbonElements: JSX.Element[] = []
     const sourceDots: JSX.Element[] = []
     const targetDots: JSX.Element[] = []
@@ -576,6 +577,21 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
         </div>
         <div className="text-lg text-slate-800 italic">
           {sentencePair.target.text}
+        </div>
+      </div>
+
+      {/* Alignment Labels */}
+      <div className="px-8 pb-6 mx-8">
+        <div className="space-y-2">
+          {sentencePair.layers[vizLayer].map((alignment, index) => (
+            <AlignmentLabel
+              key={`${vizLayer}-alignment-${index}`}
+              label={alignment.label}
+              currentLayer={vizLayer}
+              index={index}
+              visible={highlightedAlignments.has(index)}
+            />
+          ))}
         </div>
       </div>
     </div>
