@@ -492,14 +492,14 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
       <LayerPicker currentLayer={vizLayer} setVizLayer={setVizLayer} />
 
       {/* Source Sentence */}
-      <div className="content-card px-10 pt-8 pb-2 mx-auto mb-0 rounded-b-none animate-on-load" style={{ animationDelay: '400ms' }}>
-        <div className="text-xs font-medium text-sage-600 uppercase tracking-widest mb-3 opacity-75 text-center">
+      <div className="content-card px-10 pt-4 pb-1 mx-auto mb-0 rounded-b-none animate-on-load" style={{ animationDelay: '400ms' }}>
+        <div className="text-xs font-medium text-sage-600 uppercase tracking-widest mb-1 opacity-75 text-center">
           {sentencePair.source.lang.toUpperCase()}
         </div>
-        <div className="text-2xl font-display text-slate-700 mb-6 leading-relaxed font-light italic text-center">
+        <div className="text-2xl font-display text-slate-700 mb-2 leading-relaxed font-light italic text-center">
           {sentencePair.source.text}
         </div>
-        <div className="flex gap-4 items-center overflow-x-auto pb-4 pt-2 scrollbar-none justify-center">
+        <div className="flex gap-4 items-center overflow-x-auto pb-1 pt-1 scrollbar-none justify-center">
           {sentencePair.source.tokens.map((token) => {
             const isHovered = hoveredTokens.has(token.id)
             const isDimmed = hoveredTokens.size > 0 && !isHovered
@@ -545,8 +545,8 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
       </div>
 
       {/* Target Sentence */}
-      <div className="content-card px-10 pt-2 pb-8 mx-auto mt-0 rounded-t-none animate-on-load" style={{ animationDelay: '800ms' }}>
-        <div className="flex gap-4 items-center mb-4 overflow-x-auto pt-4 scrollbar-none justify-center">
+      <div className="content-card px-10 pt-1 pb-4 mx-auto mt-0 rounded-t-none animate-on-load" style={{ animationDelay: '800ms' }}>
+        <div className="flex gap-4 items-center mb-1 overflow-x-auto pt-1 scrollbar-none justify-center">
           {sentencePair.target.tokens.map((token) => {
             const isHovered = hoveredTokens.has(token.id)
             const isDimmed = hoveredTokens.size > 0 && !isHovered
@@ -570,17 +570,17 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
             )
           })}
         </div>
-        <div className="text-xs font-medium text-sage-600 uppercase tracking-widest mb-3 opacity-75 text-center">
+        <div className="text-xs font-medium text-sage-600 uppercase tracking-widest mb-1 opacity-75 text-center">
           {sentencePair.target.lang.toUpperCase()}
         </div>
-        <div className="text-2xl font-display text-slate-700 leading-relaxed font-light italic text-center">
+        <div className="text-2xl font-display text-slate-700 leading-relaxed font-light italic text-center mb-1">
           {sentencePair.target.text}
         </div>
       </div>
 
       {/* Alignment Labels */}
-      <div className="px-10 pb-8 mx-auto animate-on-load" style={{ animationDelay: '1000ms' }}>
-        <div className="space-y-3">
+      <div className="px-10 pb-1 mx-auto animate-on-load mt-0" style={{ animationDelay: '1000ms' }}>
+        <div className="space-y-1">
           {sentencePair.layers[vizLayer].map((alignment, index) => (
             <AlignmentLabel
               key={`${vizLayer}-alignment-${index}`}

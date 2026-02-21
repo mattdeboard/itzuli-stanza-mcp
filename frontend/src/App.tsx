@@ -34,11 +34,11 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-tan-25 via-tan-50 to-tan-100">
       <div className="max-w-7xl mx-auto p-8 font-sans animate-fade-in">
-        <header className="text-center mb-16 animate-on-load">
-          <h1 className="text-5xl font-display font-light mb-3 text-slate-800 tracking-tight">
+        <header className="text-center mb-4 animate-on-load">
+          <h1 className="text-5xl font-display font-light mb-2 text-slate-800 tracking-tight">
             Itzuli <span className="font-medium text-sage-600">Stanza</span>
           </h1>
-          <h2 className="text-xl font-light text-slate-500 mb-12 max-w-2xl mx-auto leading-relaxed">
+          <h2 className="text-xl font-light text-slate-500 mb-3 max-w-2xl mx-auto leading-relaxed">
             Translation Alignment Visualization for English-Basque Translations
           </h2>
 
@@ -63,7 +63,7 @@ function App() {
           </div>
         </header>
 
-        <main className="relative mt-12 animate-on-load" style={{ animationDelay: '200ms' }}>
+        <main className="relative mt-2 animate-on-load" style={{ animationDelay: '200ms' }}>
           <AlignmentVisualizer sentencePair={selectedSentence} />
         </main>
       </div>
