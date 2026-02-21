@@ -2,7 +2,7 @@
 name = "itzuli-nlp"
 version = "0.1.0"
 description = "Basque NLP tools with Itzuli translation and Stanza morphological analysis"
-readme = "README.md"
+readme = "../README.md"
 requires-python = ">=3.10"
 dependencies = [
     "dependencies>=7.7.1",
@@ -27,7 +27,14 @@ dev = [
     "ruff>=0.15.1",
 ]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/itzuli_nlp"]
+
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["src"]
 testpaths = ["tests"]
 addopts = "--ignore-glob=*_manual.py"

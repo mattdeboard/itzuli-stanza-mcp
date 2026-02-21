@@ -17,8 +17,8 @@ from typing import Tuple, List
 from dotenv import load_dotenv
 from Itzuli import Itzuli
 
-from core.nlp import create_pipeline, process_raw_analysis
-from core.types import AnalysisRow, LanguageCode
+from itzuli_nlp.core.nlp import create_pipeline, process_raw_analysis
+from itzuli_nlp.core.types import AnalysisRow, LanguageCode
 
 load_dotenv()
 

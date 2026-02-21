@@ -2,8 +2,8 @@
 
 import json
 from typing import List, Tuple
-from core.types import TranslationResult, LanguageCode
-from core.i18n import LANGUAGE_NAMES, OUTPUT_LABELS, FRIENDLY_FEATS, FRIENDLY_UPOS, QUIRKS
+from .types import TranslationResult, LanguageCode
+from .i18n import LANGUAGE_NAMES, OUTPUT_LABELS, FRIENDLY_FEATS, FRIENDLY_UPOS, QUIRKS
 
 
 def apply_friendly_mappings(

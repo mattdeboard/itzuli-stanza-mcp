@@ -8,9 +8,9 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
-from core.types import AnalysisRow
-from alignment_server.server import app
-from alignment_server.types import AlignmentData, SentencePair, TokenizedSentence, Token, AlignmentLayers
+from itzuli_nlp.core.types import AnalysisRow
+from itzuli_nlp.alignment_server.server import app
+from itzuli_nlp.alignment_server.types import AlignmentData, SentencePair, TokenizedSentence, Token, AlignmentLayers
 
 
 @pytest.fixture
@@ -68,7 +68,7 @@ class TestHealthCheck:
 
 class TestAnalyzeEndpoint:
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analyze_texts_success(self, mock_analyze, client, mock_analysis_data):
         source_analysis, target_analysis, translated_text = mock_analysis_data
         mock_analyze.return_value = (source_analysis, target_analysis, translated_text)
@@ -104,7 +104,7 @@ class TestAnalyzeEndpoint:
         assert "ITZULI_API_KEY not configured" in response.json()["detail"]
 
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analyze_texts_analysis_error(self, mock_analyze, client):
         mock_analyze.side_effect = Exception("Translation failed")
 
@@ -124,7 +124,7 @@ class TestAnalyzeEndpoint:
         assert response.status_code == 422  # Validation error
 
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analyze_texts_with_default_sentence_id(self, mock_analyze, client, mock_analysis_data):
         source_analysis, target_analysis, translated_text = mock_analysis_data
         mock_analyze.return_value = (source_analysis, target_analysis, translated_text)
@@ -145,8 +145,8 @@ class TestAnalyzeEndpoint:
 
 class TestAnalyzeAndScaffoldEndpoint:
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.create_scaffold_from_dual_analysis")
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.create_scaffold_from_dual_analysis")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analyze_and_scaffold_success(
         self, mock_analyze, mock_create_scaffold, client, mock_analysis_data, mock_alignment_data
     ):
@@ -190,7 +190,7 @@ class TestAnalyzeAndScaffoldEndpoint:
         assert "ITZULI_API_KEY not configured" in response.json()["detail"]
 
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analyze_and_scaffold_analysis_error(self, mock_analyze, client):
         mock_analyze.side_effect = Exception("Analysis failed")
 
@@ -202,8 +202,8 @@ class TestAnalyzeAndScaffoldEndpoint:
         assert "Analysis and scaffold generation failed: Analysis failed" in response.json()["detail"]
 
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.create_scaffold_from_dual_analysis")
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.create_scaffold_from_dual_analysis")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analyze_and_scaffold_scaffold_error(self, mock_analyze, mock_create_scaffold, client, mock_analysis_data):
         source_analysis, target_analysis, translated_text = mock_analysis_data
         mock_analyze.return_value = (source_analysis, target_analysis, translated_text)
@@ -225,8 +225,8 @@ class TestAnalyzeAndScaffoldEndpoint:
         assert response.status_code == 422  # Validation error
 
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.create_scaffold_from_dual_analysis")
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.create_scaffold_from_dual_analysis")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analyze_and_scaffold_with_default_sentence_id(
         self, mock_analyze, mock_create_scaffold, client, mock_analysis_data, mock_alignment_data
     ):
@@ -252,7 +252,7 @@ class TestAnalyzeAndScaffoldEndpoint:
 
 class TestModelValidation:
     def test_analysis_request_model_validation(self):
-        from alignment_server.server import AnalysisRequest
+        from itzuli_nlp.alignment_server.server import AnalysisRequest
 
         # Valid request
         valid_request = AnalysisRequest(text="Kaixo", source_lang="eu", target_lang="en", sentence_id="test-001")
@@ -264,7 +264,7 @@ class TestModelValidation:
         assert default_request.sentence_id == "default"
 
     def test_analysis_response_model_validation(self):
-        from alignment_server.server import AnalysisResponse
+        from itzuli_nlp.alignment_server.server import AnalysisResponse
 
         source_analysis = [AnalysisRow("Kaixo", "kaixo", "INTJ", "")]
         target_analysis = [AnalysisRow("Hello", "hello", "INTJ", "")]
@@ -297,7 +297,7 @@ class TestMainBlock:
         try:
             # Execute the main block directly by running the module
             result = subprocess.run(
-                [sys.executable, "-m", "alignment_server.server"],
+                [sys.executable, "-m", "itzuli_nlp.alignment_server.server"],
                 cwd=os.getcwd(),
                 env={**os.environ, "PORT": "9000", "HOST": "127.0.0.1", "ITZULI_API_KEY": "test-key"},
                 capture_output=True,
@@ -349,13 +349,13 @@ class TestMainBlock:
 
 class TestErrorHandling:
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analyze_logs_error_on_failure(self, mock_analyze, client):
         mock_analyze.side_effect = Exception("Test error")
 
         request_data = {"text": "Kaixo", "source_lang": "eu", "target_lang": "en"}
 
-        with patch("alignment_server.server.logger") as mock_logger:
+        with patch("itzuli_nlp.alignment_server.server.logger") as mock_logger:
             response = client.post("/analyze", json=request_data)
 
             assert response.status_code == 500
@@ -363,14 +363,14 @@ class TestErrorHandling:
 
 
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.create_scaffold_from_dual_analysis")
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.create_scaffold_from_dual_analysis")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analyze_and_scaffold_logs_error_on_failure(self, mock_analyze, mock_create_scaffold, client):
         mock_analyze.side_effect = Exception("Test error")
 
         request_data = {"text": "Kaixo", "source_lang": "eu", "target_lang": "en"}
 
-        with patch("alignment_server.server.logger") as mock_logger:
+        with patch("itzuli_nlp.alignment_server.server.logger") as mock_logger:
             response = client.post("/analyze-and-scaffold", json=request_data)
 
             assert response.status_code == 500
@@ -379,7 +379,7 @@ class TestErrorHandling:
 
 class TestEdgeCases:
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analyze_with_empty_features(self, mock_analyze, client):
         # Test with empty features
         source_analysis = [AnalysisRow("test", "test", "NOUN", "")]
@@ -398,7 +398,7 @@ class TestEdgeCases:
 
 class TestResponseSchemas:
     @patch.dict(os.environ, {"ITZULI_API_KEY": "test-key"})
-    @patch("alignment_server.server.analyze_both_texts")
+    @patch("itzuli_nlp.alignment_server.server.analyze_both_texts")
     def test_analysis_response_schema_compatibility(self, mock_analyze, client):
         # Test that AnalysisRow objects serialize correctly in FastAPI
         source_analysis = [AnalysisRow("Kaixo", "kaixo", "INTJ", "Animacy=Inan")]

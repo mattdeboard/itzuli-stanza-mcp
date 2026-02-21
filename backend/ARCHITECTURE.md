@@ -11,23 +11,23 @@ A modular Basque language processing system that combines translation capabiliti
 ## Project Structure
 
 ```code
-core/                      # Core reusable NLP library
-├── workflow.py            # Core translation+analysis workflow
-├── nlp.py                 # Stanza pipeline configuration and text processing
-├── formatters.py          # Output formatting (markdown, JSON, dict list)
-├── types.py               # Shared data types (AnalysisRow, TranslationResult)
-├── i18n.py                # Internationalization data for localized output
-└── __init__.py
-
-mcp_server/                # MCP-specific code for AI assistant integration
-├── server.py              # MCP tool definitions and endpoints
-├── services.py            # MCP glue layer (thin wrapper)
-└── __init__.py
-
-alignment_server/          # HTTP API for frontend applications
-├── server.py              # FastAPI HTTP server
-├── scaffold.py            # Alignment scaffold generation
-├── types.py               # Alignment-specific Pydantic types
+src/itzuli_nlp/            # Main Python package
+├── core/                  # Core reusable NLP library
+│   ├── workflow.py        # Core translation+analysis workflow
+│   ├── nlp.py             # Stanza pipeline configuration and text processing
+│   ├── formatters.py      # Output formatting (markdown, JSON, dict list)
+│   ├── types.py           # Shared data types (AnalysisRow, TranslationResult)
+│   ├── i18n.py            # Internationalization data for localized output
+│   └── __init__.py
+├── mcp_server/            # MCP-specific code for AI assistant integration
+│   ├── server.py          # MCP tool definitions and endpoints
+│   ├── services.py        # MCP glue layer (thin wrapper)
+│   └── __init__.py
+├── alignment_server/      # HTTP API for frontend applications
+│   ├── server.py          # FastAPI HTTP server
+│   ├── scaffold.py        # Alignment scaffold generation
+│   ├── types.py           # Alignment-specific Pydantic types
+│   └── __init__.py
 └── __init__.py
 
 tools/                     # Workflow utilities and scripts

@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
-from core.nlp import process_raw_analysis, create_pipeline
-from core.types import AnalysisRow
+from itzuli_nlp.core.nlp import process_raw_analysis, create_pipeline
+from itzuli_nlp.core.types import AnalysisRow
 
 
 class TestProcessRawAnalysis:
