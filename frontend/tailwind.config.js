@@ -13,7 +13,7 @@ export default {
         },
       },
       spacing: {
-        'ribbon-space': '200px',
+        'ribbon-space': '120px',
       },
       opacity: {
         '15': '0.15',

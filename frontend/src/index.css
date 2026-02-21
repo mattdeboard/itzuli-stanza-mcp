@@ -12,15 +12,27 @@
 
 @layer components {
   .token {
-    @apply px-3 py-2 bg-white border-2 border-gray-200 rounded cursor-pointer font-medium select-none transition-all duration-200 hover:border-ribbon-blue hover:bg-blue-50 hover:-translate-y-0.5;
+    @apply px-3 py-2 bg-white border-2 border-gray-200 rounded cursor-pointer font-medium select-none transition-all duration-200 hover:border-ribbon-blue hover:bg-blue-50 hover:-translate-y-0.5 relative;
   }
   
   .token--highlighted {
-    @apply border-ribbon-blue bg-blue-50 -translate-y-0.5;
+    @apply border-ribbon-blue bg-blue-50 -translate-y-0.5 shadow-sm;
   }
   
   .token--dimmed {
     @apply opacity-15;
+  }
+  
+  .token--connected::after {
+    @apply content-[''] absolute w-2 h-2 bg-ribbon-blue rounded-full opacity-60;
+  }
+  
+  .token--connected.token--source::after {
+    @apply bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2;
+  }
+  
+  .token--connected.token--target::after {
+    @apply top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
   }
   
   .ribbon {
