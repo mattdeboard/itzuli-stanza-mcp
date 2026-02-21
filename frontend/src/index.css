@@ -25,6 +25,7 @@
   .token {
     @apply px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-lg cursor-pointer font-medium select-none transition-all duration-200 hover:border-sage-400 hover:bg-sage-50/50 hover:shadow-sm relative;
     @apply animate-fade-in;
+    @apply focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-offset-1;
   }
   
   .token--highlighted {
@@ -70,8 +71,49 @@
     @apply bg-white/60 backdrop-blur-sm border border-slate-200/60 rounded-xl shadow-sm;
   }
   
-  /* Subtle animations for professional feel */
+  /* Accessibility improvements */
   .animate-on-load {
     @apply animate-slide-up;
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .token {
+      @apply border-2 border-slate-800;
+    }
+    
+    .token--highlighted {
+      @apply border-2 border-slate-900 bg-yellow-100;
+    }
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-slide-up,
+    .animate-steam-rise,
+    .animate-copper-glow,
+    .animate-mechanical-click {
+      animation: none;
+    }
+    
+    .token,
+    .token--highlighted,
+    .ribbon {
+      transition: none;
+    }
+  }
+  
+  /* Screen reader only content */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 }
