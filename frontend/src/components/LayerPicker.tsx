@@ -10,17 +10,17 @@ export const LAYER_CONFIGS: Record<LayerType, LayerConfig> = {
   [LayerType.LEXICAL]: {
     name: LayerType.LEXICAL,
     displayName: 'Lexical',
-    color: '#10B981'
+    color: '#5a9975' // sage-500 (forest green)
   },
   [LayerType.GRAMMATICAL_RELATIONS]: {
     name: LayerType.GRAMMATICAL_RELATIONS,
     displayName: 'Grammatical Relations',
-    color: '#E07C3E'
+    color: '#8b5fb5' // soft purple/violet
   },
   [LayerType.FEATURES]: {
     name: LayerType.FEATURES,
     displayName: 'Features',
-    color: '#8B5CF6'
+    color: '#c8954d' // tan-600 (warm amber/bronze)
   }
 }
 
@@ -37,8 +37,8 @@ type LayerPickerProps = {
 
 export function LayerPicker({ currentLayer, setVizLayer }: LayerPickerProps) {
   return (
-    <div className="px-8 pt-4 pb-2 mx-8">
-      <div className="flex gap-2 justify-center">
+    <div className="px-10 pt-6 pb-4 mx-auto animate-on-load" style={{ animationDelay: '200ms' }}>
+      <div className="flex gap-3 justify-center">
         {Object.entries(LAYER_CONFIGS).map(([layerKey, config]) => {
           const isActive = currentLayer === layerKey
           return (

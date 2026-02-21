@@ -1,30 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  * {
+    @apply border-slate-200;
+  }
+  
   body {
-    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    @apply font-sans text-slate-700 bg-tan-50;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-slate-800;
   }
 }
 
 @layer components {
   .token {
-    @apply px-3 py-2 bg-white border-2 border-gray-200 rounded cursor-pointer font-medium select-none transition-all duration-200 hover:border-ribbon-blue hover:bg-blue-50 relative;
+    @apply px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-lg cursor-pointer font-medium select-none transition-all duration-200 hover:border-sage-400 hover:bg-sage-50/50 hover:shadow-sm relative;
+    @apply animate-fade-in;
   }
   
   .token--highlighted {
-    @apply border-ribbon-blue bg-blue-50 shadow-sm;
+    @apply border-sage-500 bg-sage-50 shadow-md ring-1 ring-sage-200;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px 0 rgba(90, 153, 117, 0.15), 0 0 0 1px rgb(209, 229, 216);
   }
   
   .token--dimmed {
-    @apply opacity-15;
+    @apply opacity-15 blur-[0.5px];
   }
   
   .token--connected::after {
-    @apply content-[''] absolute w-2 h-2 bg-ribbon-blue rounded-full opacity-60;
+    @apply content-[''] absolute w-2 h-2 bg-sage-500 rounded-full opacity-75 animate-gentle-pulse;
   }
   
   .token--connected.token--source::after {
@@ -36,18 +50,28 @@
   }
 
   .token--pinned {
-    @apply ring-2 ring-ribbon-blue ring-opacity-60 bg-blue-50 border-ribbon-blue shadow-sm;
+    @apply ring-2 ring-sage-500/60 bg-sage-100/80 border-sage-600 shadow-lg backdrop-blur-sm;
   }
   
   .ribbon {
-    @apply opacity-30 transition-opacity duration-300;
+    @apply opacity-40 transition-all duration-300 ease-out;
   }
   
   .ribbon--highlighted {
-    @apply opacity-100;
+    @apply opacity-85;
   }
   
   .ribbon--dimmed {
     @apply opacity-15;
+  }
+  
+  /* Professional card styling */
+  .content-card {
+    @apply bg-white/60 backdrop-blur-sm border border-slate-200/60 rounded-xl shadow-sm;
+  }
+  
+  /* Subtle animations for professional feel */
+  .animate-on-load {
+    @apply animate-slide-up;
   }
 }
