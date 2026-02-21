@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { type SentencePair, type Alignment, LayerType } from '../types/alignment'
 import { LayerPicker, LAYER_CONFIGS } from './LayerPicker'
+import { AlignmentLabel } from './AlignmentLabel'
 
 type TokenPosition = {
   id: string
@@ -25,6 +26,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
   const [animatingRibbons, setAnimatingRibbons] = useState<Set<number>>(new Set())
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState<boolean>(false)
   const [vizLayer, setVizLayer] = useState<LayerType>(LayerType.LEXICAL)
+  const [showLabels, setShowLabels] = useState<boolean>(false)
 
   const updateTokenPositions = useCallback(() => {
     if (!containerRef.current) return
@@ -98,6 +100,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     setAnimatingRibbons(new Set())
     setPinnedTokenId(null)
     setPinnedIsSource(false)
+    setShowLabels(false)
   }, [sentencePair])
 
   // Trigger initial animations when lexical layer loads
@@ -201,6 +204,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
 
     setHoveredTokens(newHoveredTokens)
     setHighlightedAlignments(newHighlightedAlignments)
+    setShowLabels(true)
   }, [sentencePair.layers[vizLayer], pinnedTokenId, pinnedIsSource, highlightedAlignments])
 
   const handleTokenLeave = useCallback(() => {
@@ -229,6 +233,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
       setHoveredTokens(new Set())
       setHighlightedAlignments(new Set())
       setAnimatingRibbons(new Set())
+      setShowLabels(false)
     }
   }, [pinnedTokenId, pinnedIsSource, sentencePair.layers[vizLayer]])
 
@@ -241,6 +246,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
       setHoveredTokens(new Set())
       setHighlightedAlignments(new Set())
       setAnimatingRibbons(new Set())
+      setShowLabels(false)
     } else {
       // Pin this token
       setPinnedTokenId(tokenId)
@@ -280,6 +286,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
 
       setHoveredTokens(newHoveredTokens)
       setHighlightedAlignments(newHighlightedAlignments)
+      setShowLabels(true)
     }
   }, [pinnedTokenId, sentencePair.layers[vizLayer]])
 
@@ -309,9 +316,9 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     const isManyToMany = alignmentSourcePositions.length > 1 || alignmentTargetPositions.length > 1
 
     if (isManyToMany) {
-      return createManyToManyRibbon(alignmentSourcePositions, alignmentTargetPositions, ribbonRect, index)
+      return createManyToManyRibbon(alignmentSourcePositions, alignmentTargetPositions, ribbonRect, index, alignment)
     } else {
-      return createSimpleRibbon(alignmentSourcePositions[0], alignmentTargetPositions[0], ribbonRect, index)
+      return createSimpleRibbon(alignmentSourcePositions[0], alignmentTargetPositions[0], ribbonRect, index, alignment)
     }
   }
 
@@ -339,6 +346,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     const isHighlighted = highlightedAlignments.has(index)
     const isDimmed = highlightedAlignments.size > 0 && !isHighlighted
     const isAnimating = animatingRibbons.has(index)
+    const isSolidLine = (isHighlighted && showLabels) || !hasInitiallyLoaded
 
     // Determine if this ribbon is part of the pinned set
     const isPinnedRibbon = pinnedTokenId ? sentencePair.layers[vizLayer][index] &&
@@ -374,8 +382,8 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
           strokeWidth={options?.strokeWidth || "3"}
           opacity={opacity}
           className="transition-opacity duration-300"
-          strokeDasharray={isHighlighted || !hasInitiallyLoaded ? `${pathLength}` : undefined}
-          strokeDashoffset={isHighlighted || !hasInitiallyLoaded ? (isAnimating ? '0' : `${pathLength}`) : undefined}
+          strokeDasharray={isSolidLine ? `${pathLength}` : "6 4"}
+          strokeDashoffset={isSolidLine ? (isAnimating ? '0' : `${pathLength}`) : undefined}
           style={isHighlighted ? {
             transition: 'stroke-dashoffset 400ms ease-out',
             transitionDelay: options?.animationDelay ? `${options.animationDelay}ms` : undefined
@@ -413,7 +421,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     }
   }
 
-  const createSimpleRibbon = (sourcePos: TokenPosition, targetPos: TokenPosition, ribbonRect: DOMRect, index: number) => {
+  const createSimpleRibbon = (sourcePos: TokenPosition, targetPos: TokenPosition, ribbonRect: DOMRect, index: number, alignment?: Alignment) => {
     const ribbon = createSingleRibbon(sourcePos, targetPos, ribbonRect, index)
 
     return (
@@ -425,7 +433,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     )
   }
 
-  const createManyToManyRibbon = (sourcePositions: TokenPosition[], targetPositions: TokenPosition[], ribbonRect: DOMRect, index: number) => {
+  const createManyToManyRibbon = (sourcePositions: TokenPosition[], targetPositions: TokenPosition[], ribbonRect: DOMRect, index: number, alignment?: Alignment) => {
     const ribbonElements: JSX.Element[] = []
     const sourceDots: JSX.Element[] = []
     const targetDots: JSX.Element[] = []
@@ -501,7 +509,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
         <div className="text-lg text-slate-800 mb-4 italic">
           {sentencePair.source.text}
         </div>
-        <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex gap-3 items-center overflow-x-auto pb-2">
           {sentencePair.source.tokens.map((token) => {
             const isHovered = hoveredTokens.has(token.id)
             const isDimmed = hoveredTokens.size > 0 && !isHovered
@@ -513,7 +521,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
             return (
               <span
                 key={token.id}
-                className={`token ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--source' : ''} ${isPinned ? 'token--pinned' : ''}`}
+                className={`token flex-shrink-0 ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--source' : ''} ${isPinned ? 'token--pinned' : ''}`}
                 data-token-id={token.id}
                 data-token-type="source"
                 onMouseEnter={() => handleTokenHover(token.id, true)}
@@ -547,7 +555,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
 
       {/* Target Sentence */}
       <div className="px-8 pt-0 pb-6 bg-gray-50 rounded-b-lg mx-8">
-        <div className="flex flex-wrap gap-3 items-center mb-2">
+        <div className="flex gap-3 items-center mb-2 overflow-x-auto pt-2">
           {sentencePair.target.tokens.map((token) => {
             const isHovered = hoveredTokens.has(token.id)
             const isDimmed = hoveredTokens.size > 0 && !isHovered
@@ -559,7 +567,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
             return (
               <span
                 key={token.id}
-                className={`token ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--target' : ''} ${isPinned ? 'token--pinned' : ''}`}
+                className={`token flex-shrink-0 ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--target' : ''} ${isPinned ? 'token--pinned' : ''}`}
                 data-token-id={token.id}
                 data-token-type="target"
                 onMouseEnter={() => handleTokenHover(token.id, false)}
@@ -576,6 +584,21 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
         </div>
         <div className="text-lg text-slate-800 italic">
           {sentencePair.target.text}
+        </div>
+      </div>
+
+      {/* Alignment Labels */}
+      <div className="px-8 pb-6 mx-8">
+        <div className="space-y-2">
+          {sentencePair.layers[vizLayer].map((alignment, index) => (
+            <AlignmentLabel
+              key={`${vizLayer}-alignment-${index}`}
+              label={alignment.label}
+              currentLayer={vizLayer}
+              index={index}
+              visible={showLabels && highlightedAlignments.has(index)}
+            />
+          ))}
         </div>
       </div>
     </div>
