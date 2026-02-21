@@ -313,7 +313,14 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     }
   }
 
-  const createSimpleRibbon = (sourcePos: TokenPosition, targetPos: TokenPosition, ribbonRect: DOMRect, index: number) => {
+  const createSingleRibbon = (sourcePos: TokenPosition, targetPos: TokenPosition, ribbonRect: DOMRect, index: number, options?: {
+    strokeWidth?: number
+    opacityMultiplier?: number
+    pathKey?: string
+    sourceDotRadius?: number
+    targetDotRadius?: number
+    animationDelay?: number
+  }) => {
     // Connection points
     const sourceDotX = sourcePos.x
     const sourceDotY = -8
@@ -339,9 +346,11 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
       ) : false
 
     // Different opacity for pinned vs hovered ribbons
-    const opacity = isHighlighted
+    const baseOpacity = isHighlighted
       ? (isPinnedRibbon ? 1 : 0.7) // Pinned ribbons at full opacity, hover preview at 70%
       : (isDimmed ? 0.15 : 0.6)
+    
+    const opacity = baseOpacity * (options?.opacityMultiplier || 1)
 
     // Calculate path length for animation (using a simpler approach)
     let pathLength: number
@@ -353,153 +362,126 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
       pathLength = 150 // fallback length
     }
 
-    return (
-      <g key={`ribbon-group-${index}`}>
-        {/* Single ribbon curve */}
+    return {
+      path: (
         <path
+          key={options?.pathKey || `ribbon-path-${index}`}
           d={ribbonPath}
           fill="none"
           stroke="#3b82f6"
-          strokeWidth="3"
+          strokeWidth={options?.strokeWidth || "3"}
           opacity={opacity}
           className="transition-opacity duration-300"
           strokeDasharray={isHighlighted || !hasInitiallyLoaded ? `${pathLength}` : undefined}
           strokeDashoffset={isHighlighted || !hasInitiallyLoaded ? (isAnimating ? '0' : `${pathLength}`) : undefined}
           style={isHighlighted ? {
-            transition: 'stroke-dashoffset 400ms ease-out'
+            transition: 'stroke-dashoffset 400ms ease-out',
+            transitionDelay: options?.animationDelay ? `${options.animationDelay}ms` : undefined
           } : undefined}
         />
-
-        {/* Source connection dot */}
+      ),
+      sourceDot: (
         <circle
+          key={`source-dot-${options?.pathKey || index}`}
           cx={sourceDotX}
           cy={sourceDotY}
-          r="4"
+          r={options?.sourceDotRadius || "4"}
           fill="#3b82f6"
           opacity={isHighlighted && isAnimating ? opacity : (isHighlighted ? 0 : opacity)}
           className="transition-all duration-300"
           style={isHighlighted ? {
-            transitionDelay: isAnimating ? '300ms' : '0ms'
+            transitionDelay: isAnimating ? `${300 + (options?.animationDelay || 0)}ms` : '0ms'
           } : undefined}
         />
-
-        {/* Target connection dot */}
+      ),
+      targetDot: (
         <circle
+          key={`target-dot-${options?.pathKey || index}`}
           cx={targetDotX}
           cy={targetDotY}
-          r="4"
+          r={options?.targetDotRadius || "4"}
           fill="#3b82f6"
           opacity={isHighlighted && isAnimating ? opacity : (isHighlighted ? 0 : opacity)}
           className="transition-all duration-300"
           style={isHighlighted ? {
-            transitionDelay: isAnimating ? '350ms' : '0ms'
+            transitionDelay: isAnimating ? `${350 + (options?.animationDelay || 0)}ms` : '0ms'
           } : undefined}
         />
+      )
+    }
+  }
+
+  const createSimpleRibbon = (sourcePos: TokenPosition, targetPos: TokenPosition, ribbonRect: DOMRect, index: number) => {
+    const ribbon = createSingleRibbon(sourcePos, targetPos, ribbonRect, index)
+    
+    return (
+      <g key={`ribbon-group-${index}`}>
+        {ribbon.path}
+        {ribbon.sourceDot}
+        {ribbon.targetDot}
       </g>
     )
   }
 
   const createManyToManyRibbon = (sourcePositions: TokenPosition[], targetPositions: TokenPosition[], ribbonRect: DOMRect, index: number) => {
-    const isHighlighted = highlightedAlignments.has(index)
-    const isDimmed = highlightedAlignments.size > 0 && !isHighlighted
-    const isAnimating = animatingRibbons.has(index)
-
-    // Determine if this ribbon is part of the pinned set
-    const isPinnedRibbon = pinnedTokenId ? sentencePair.layers.lexical[index] &&
-      (pinnedIsSource
-        ? sentencePair.layers.lexical[index].source.includes(pinnedTokenId)
-        : sentencePair.layers.lexical[index].target.includes(pinnedTokenId)
-      ) : false
-
-    // Different opacity for pinned vs hovered ribbons
-    const opacity = isHighlighted
-      ? (isPinnedRibbon ? 1 : 0.7)
-      : (isDimmed ? 0.15 : 0.6)
-
     const ribbonElements: JSX.Element[] = []
+    const sourceDots: JSX.Element[] = []
+    const targetDots: JSX.Element[] = []
 
-    // Create individual simple ribbons from each source to each target
+    // Create individual ribbons from each source to each target using createSingleRibbon
     sourcePositions.forEach((sourcePos, sourceIndex) => {
       targetPositions.forEach((targetPos, targetIndex) => {
-        const ribbonKey = `${sourceIndex}-${targetIndex}`
+        const ribbonKey = `${index}-${sourceIndex}-${targetIndex}`
+        const animationDelay = (sourceIndex + targetIndex) * 100
 
-        // Use the same logic as simple ribbons
-        const sourceDotX = sourcePos.x
-        const sourceDotY = -8
-        const targetDotX = targetPos.x
-        const targetDotY = ribbonRect.height + 8
+        const ribbon = createSingleRibbon(sourcePos, targetPos, ribbonRect, index, {
+          strokeWidth: 2.5,
+          opacityMultiplier: 0.8,
+          pathKey: ribbonKey,
+          sourceDotRadius: 3,
+          targetDotRadius: 3,
+          animationDelay
+        })
 
-        // Smooth bezier curve
-        const curveHeight = targetDotY - sourceDotY
-        const controlOffset = Math.min(curveHeight * 0.3, 50)
-
-        const ribbonPath = `M ${sourceDotX} ${sourceDotY}
-                           C ${sourceDotX} ${sourceDotY + controlOffset}, ${targetDotX} ${targetDotY - controlOffset}, ${targetDotX} ${targetDotY}`
-
-        let pathLength: number
-        try {
-          pathLength = calculatePathLength(ribbonPath)
-          if (pathLength < 50) pathLength = 150
-        } catch {
-          pathLength = 150
-        }
-
-        ribbonElements.push(
-          <path
-            key={`many-ribbon-${index}-${ribbonKey}`}
-            d={ribbonPath}
-            fill="none"
-            stroke="#3b82f6"
-            strokeWidth="2.5"
-            opacity={opacity * 0.8}
-            className="transition-opacity duration-300"
-            strokeDasharray={isHighlighted || !hasInitiallyLoaded ? `${pathLength}` : undefined}
-            strokeDashoffset={isHighlighted || !hasInitiallyLoaded ? (isAnimating ? '0' : `${pathLength}`) : undefined}
-            style={isHighlighted ? {
-              transition: `stroke-dashoffset 400ms ease-out`,
-              transitionDelay: `${(sourceIndex + targetIndex) * 100}ms`
-            } : undefined}
-          />
-        )
+        ribbonElements.push(ribbon.path)
       })
+    })
+
+    // Collect unique source dots
+    const processedSourcePositions = new Set<string>()
+    sourcePositions.forEach((pos, i) => {
+      const posKey = `${pos.x}-${pos.y}`
+      if (!processedSourcePositions.has(posKey)) {
+        processedSourcePositions.add(posKey)
+        const ribbon = createSingleRibbon(pos, targetPositions[0], ribbonRect, index, {
+          sourceDotRadius: 3,
+          animationDelay: i * 50,
+          pathKey: `many-source-${index}-${i}`
+        })
+        sourceDots.push(ribbon.sourceDot)
+      }
+    })
+
+    // Collect unique target dots
+    const processedTargetPositions = new Set<string>()
+    targetPositions.forEach((pos, i) => {
+      const posKey = `${pos.x}-${pos.y}`
+      if (!processedTargetPositions.has(posKey)) {
+        processedTargetPositions.add(posKey)
+        const ribbon = createSingleRibbon(sourcePositions[0], pos, ribbonRect, index, {
+          targetDotRadius: 3,
+          animationDelay: i * 50,
+          pathKey: `many-target-${index}-${i}`
+        })
+        targetDots.push(ribbon.targetDot)
+      }
     })
 
     return (
       <g key={`many-to-many-${index}`}>
-        {/* Individual ribbon paths */}
         {ribbonElements}
-
-        {/* Connection dots for source tokens */}
-        {sourcePositions.map((pos, i) => (
-          <circle
-            key={`source-dot-${index}-${i}`}
-            cx={pos.x}
-            cy={-8}
-            r="3"
-            fill="#3b82f6"
-            opacity={isHighlighted && isAnimating ? opacity : (isHighlighted ? 0 : opacity)}
-            className="transition-all duration-300"
-            style={isHighlighted ? {
-              transitionDelay: isAnimating ? `${300 + i * 50}ms` : '0ms'
-            } : undefined}
-          />
-        ))}
-
-        {/* Connection dots for target tokens */}
-        {targetPositions.map((pos, i) => (
-          <circle
-            key={`target-dot-${index}-${i}`}
-            cx={pos.x}
-            cy={ribbonRect.height + 8}
-            r="3"
-            fill="#3b82f6"
-            opacity={isHighlighted && isAnimating ? opacity : (isHighlighted ? 0 : opacity)}
-            className="transition-all duration-300"
-            style={isHighlighted ? {
-              transitionDelay: isAnimating ? `${350 + i * 50}ms` : '0ms'
-            } : undefined}
-          />
-        ))}
+        {sourceDots}
+        {targetDots}
       </g>
     )
   }
