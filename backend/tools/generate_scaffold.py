@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from dotenv import load_dotenv
 from tools.dual_analysis import analyze_both_texts
-from alignment_server.scaffold import create_scaffold_from_dual_analysis, save_alignment_data
+from itzuli_nlp.alignment_server.scaffold import create_scaffold_from_dual_analysis, save_alignment_data
 
 load_dotenv()
 

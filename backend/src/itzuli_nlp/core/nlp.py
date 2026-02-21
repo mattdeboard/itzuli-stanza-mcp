@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 import stanza
 
-from core.types import AnalysisRow, LanguageCode
+from .types import AnalysisRow, LanguageCode
 
 
 def create_pipeline(language: LanguageCode = "eu") -> stanza.Pipeline:

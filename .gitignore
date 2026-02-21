@@ -1,12 +1,37 @@
 # Python-generated files
-__pycache__/
+__pycache__
 *.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+backend/build/
+backend/dist/
+backend/wheels/
+backend/*.egg-info
 
 # Virtual environments
-.venv
+backend/.venv
 .claude/
-.env
+backend/.env
+
+# Node.js (for future frontend)
+frontend/node_modules/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/build/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

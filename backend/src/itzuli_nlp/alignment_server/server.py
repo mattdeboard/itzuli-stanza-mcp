@@ -8,10 +8,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from core.types import AnalysisRow, LanguageCode
+from ..core.types import AnalysisRow, LanguageCode
 from tools.dual_analysis import analyze_both_texts
-from alignment_server.scaffold import create_scaffold_from_dual_analysis
-from alignment_server.types import AlignmentData
+from .scaffold import create_scaffold_from_dual_analysis
+from .types import AlignmentData
 
 load_dotenv()
 

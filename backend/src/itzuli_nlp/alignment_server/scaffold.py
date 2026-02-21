@@ -4,15 +4,15 @@ import json
 from pathlib import Path
 from typing import List
 
-from core.types import AnalysisRow
-from alignment_server.types import (
+from ..core.types import AnalysisRow
+from .types import (
     Token,
     TokenizedSentence,
     AlignmentLayers,
     SentencePair,
     AlignmentData,
 )
-from core.i18n import FRIENDLY_FEATS
+from ..core.i18n import FRIENDLY_FEATS
 
 
 def parse_features_string(feats_string: str, language: str = "en") -> List[str]:

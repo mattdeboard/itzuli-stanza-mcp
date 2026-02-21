@@ -11,23 +11,23 @@ Euskal hizkuntzaren prozesamendu sistema modular bat da, Itzuli APIaren itzulpen
 ## Proiektuaren Egitura
 
 ```code
-core/                      # Berrerabilgarriak diren NLP liburutegi nagusia
-├── workflow.py            # Itzulpen eta analisi workflow nagusia
-├── nlp.py                 # Stanza pipeline konfigurazioa eta testu prozesatzea
-├── formatters.py          # Irteera formatuak (markdown, JSON, dict lista)
-├── types.py               # Partekatutako datu motak (AnalysisRow, TranslationResult)
-├── i18n.py                # Lokalizaturiko irteeraren nazioartekotze datuak
-└── __init__.py
-
-mcp_server/                # AI laguntzaileen integraziorako MCP-rentzako kodea
-├── server.py              # MCP tresna definizioak eta amaierako puntuak
-├── services.py            # MCP itsaste geruza (bilgarri mehea)
-└── __init__.py
-
-alignment_server/          # Frontend aplikazioentzako HTTP API
-├── server.py              # FastAPI HTTP zerbitzaria
-├── scaffold.py            # Lerrokatze scaffold sortzea
-├── types.py               # Lerrokatze-rentzako Pydantic mota zehatzak
+src/itzuli_nlp/            # Python pakete nagusia
+├── core/                  # Berrerabilgarriak diren NLP liburutegi nagusia
+│   ├── workflow.py        # Itzulpen eta analisi workflow nagusia
+│   ├── nlp.py             # Stanza pipeline konfigurazioa eta testu prozesatzea
+│   ├── formatters.py      # Irteera formatuak (markdown, JSON, dict lista)
+│   ├── types.py           # Partekatutako datu motak (AnalysisRow, TranslationResult)
+│   ├── i18n.py            # Lokalizaturiko irteeraren nazioartekotze datuak
+│   └── __init__.py
+├── mcp_server/            # AI laguntzaileen integraziorako MCP-rentzako kodea
+│   ├── server.py          # MCP tresna definizioak eta amaierako puntuak
+│   ├── services.py        # MCP itsaste geruza (bilgarri mehea)
+│   └── __init__.py
+├── alignment_server/      # Frontend aplikazioentzako HTTP API
+│   ├── server.py          # FastAPI HTTP zerbitzaria
+│   ├── scaffold.py        # Lerrokatze scaffold sortzea
+│   ├── types.py           # Lerrokatze-rentzako Pydantic mota zehatzak
+│   └── __init__.py
 └── __init__.py
 
 tools/                     # Workflow tresnak eta scriptak

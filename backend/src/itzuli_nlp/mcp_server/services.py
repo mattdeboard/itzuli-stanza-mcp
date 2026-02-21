@@ -3,9 +3,9 @@
 import logging
 
 from Itzuli import Itzuli
-from core.types import LanguageCode
-from core.workflow import process_translation_with_analysis
-from core.formatters import format_as_markdown_table
+from ..core.types import LanguageCode
+from ..core.workflow import process_translation_with_analysis
+from ..core.formatters import format_as_markdown_table
 
 logger = logging.getLogger("itzuli-stanza-services")
 

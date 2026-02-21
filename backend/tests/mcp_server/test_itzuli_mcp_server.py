@@ -4,14 +4,14 @@ from unittest.mock import patch
 import pytest
 from mcp.server.fastmcp.exceptions import ToolError
 
-from mcp_server.server import translate, get_quota, send_feedback
+from itzuli_nlp.mcp_server.server import translate, get_quota, send_feedback
 
 
 class TestTranslate:
     def test_returns_translated_text_on_success(self):
 
         with patch(
-            "mcp_server.services.translate_with_analysis",
+            "itzuli_nlp.mcp_server.services.translate_with_analysis",
             return_value="Source: Kaixo! (euskera)\nTranslation: Hola! (español)\n\nMorphological Analysis:\n| Word | Lemma | Part of Speech | Features |\n|------|-------|---------------|----------|\n| Hola | (hola) | interjection | — |",
         ):
             result = translate("Kaixo!", "eu", "es")
@@ -21,7 +21,7 @@ class TestTranslate:
 
     def test_raises_tool_error_on_api_failure(self):
         with patch(
-            "mcp_server.services.translate_with_analysis",
+            "itzuli_nlp.mcp_server.services.translate_with_analysis",
             side_effect=Exception("Invalid API key or expired"),
         ):
             with pytest.raises(ToolError, match="Translation with analysis failed"):
@@ -33,7 +33,7 @@ class TestTranslate:
 
     def test_result_format_has_four_columns(self):
         with patch(
-            "mcp_server.services.translate_with_analysis",
+            "itzuli_nlp.mcp_server.services.translate_with_analysis",
             return_value="Source: Kaixo! (euskera)\nTranslation: Hola! (español)\n\nMorphological Analysis:\n| Word | Lemma | Part of Speech | Features |\n|------|-------|---------------|----------|\n| Kaixo | (kaixo) | interjection | Animacy=Inan |",
         ):
             result = translate("Kaixo!", "eu", "es")
@@ -64,7 +64,7 @@ class TestGetQuota:
     def test_returns_quota_info_on_success(self):
         mock_response = {"remaining": 5000, "total": 10000, "used": 5000}
 
-        with patch("mcp_server.services.get_quota", return_value=mock_response):
+        with patch("itzuli_nlp.mcp_server.services.get_quota", return_value=mock_response):
             result = get_quota()
 
         parsed = json.loads(result)
@@ -73,7 +73,7 @@ class TestGetQuota:
 
     def test_raises_tool_error_on_api_failure(self):
         with patch(
-            "mcp_server.services.get_quota",
+            "itzuli_nlp.mcp_server.services.get_quota",
             side_effect=Exception("Invalid status code: 500"),
         ):
             with pytest.raises(ToolError, match="Quota check failed"):
@@ -84,7 +84,7 @@ class TestSendFeedback:
     def test_returns_confirmation_on_success(self):
         mock_response = {"success": True}
 
-        with patch("mcp_server.services.send_feedback", return_value=mock_response):
+        with patch("itzuli_nlp.mcp_server.services.send_feedback", return_value=mock_response):
             result = send_feedback("translation-123", "Hola!", 4)
 
         parsed = json.loads(result)
@@ -92,7 +92,7 @@ class TestSendFeedback:
 
     def test_raises_tool_error_on_api_failure(self):
         with patch(
-            "mcp_server.services.send_feedback",
+            "itzuli_nlp.mcp_server.services.send_feedback",
             side_effect=Exception("Invalid status code: 403"),
         ):
             with pytest.raises(ToolError, match="Feedback submission failed"):
