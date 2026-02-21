@@ -16,10 +16,10 @@ frontend/node_modules/
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
-frontend/.env.local
-frontend/.env.development.local
-frontend/.env.test.local
-frontend/.env.production.local
+# frontend/.env.local
+# frontend/.env.development.local
+# frontend/.env.test.local
+# frontend/.env.production.local
 frontend/build/
 frontend/dist/
 
@@ -35,3 +35,4 @@ Thumbs.db
 
 # Logs
 *.log
+node_modules/

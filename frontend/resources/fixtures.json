@@ -1,0 +1,95 @@
+{
+  "sentences": [
+    {
+      "id": "ex1",
+      "source": {
+        "lang": "en",
+        "text": "I don't know him",
+        "tokens": [
+          { "id": "s0", "form": "I", "lemma": "I", "pos": "pronoun", "features": [ ] },
+          { "id": "s1", "form": "don't", "lemma": "do", "pos": "auxiliary", "features": [ "negation" ] },
+          { "id": "s2", "form": "know", "lemma": "know", "pos": "verb", "features": [ "present" ] },
+          { "id": "s3", "form": "him", "lemma": "he", "pos": "pronoun", "features": [ "accusative", "3rd_person", "singular" ] }
+        ]
+      },
+      "target": {
+        "lang": "eu",
+        "text": "Ez dut ezagutzen",
+        "tokens": [
+          { "id": "t0", "form": "Ez", "lemma": "ez", "pos": "particle", "features": [ "negation" ] },
+          { "id": "t1", "form": "dut", "lemma": "edun", "pos": "auxiliary", "features": [ "indicative", "present", "1st_person_sub", "3rd_person_obj", "singular" ] },
+          { "id": "t2", "form": "ezagutzen", "lemma": "ezagutu", "pos": "verb", "features": [ "imperfective" ] }
+        ]
+      },
+      "layers": {
+        "lexical": [
+          { "source": [ "s2" ], "target": [ "t2" ], "label": "know → ezagutu (core meaning)" }
+        ],
+        "grammatical_relations": [
+          { "source": [ "s0" ], "target": [ "t1" ], "label": "subject (ergative): 'I' → 1st person subject agreement in 'dut'" },
+          { "source": [ "s3" ], "target": [ "t1" ], "label": "direct object (absolutive): 'him' → 3rd person object agreement in 'dut' (no separate pronoun)" }
+        ],
+        "features": [
+          { "source": [ "s1" ], "target": [ "t0" ], "label": "negation: 'don't' → 'ez'" },
+          { "source": [ "s1" ], "target": [ "t1" ], "label": "auxiliary function: 'don't' (do-support) → 'dut' (carries tense/agreement)" },
+          { "source": [ "s2" ], "target": [ "t2" ], "label": "aspect: present habitual 'know' → imperfective '-tzen' in 'ezagutzen'" },
+          { "source": [ "s0" ], "target": [ "t1" ], "label": "person/number agreement: 'I' → 1st person singular in 'dut'" },
+          { "source": [ "s3" ], "target": [ "t1" ], "label": "person/number agreement: 'him' → 3rd person singular object in 'dut'" }
+        ]
+      }
+    },
+    {
+      "id": "ex2",
+      "source": {
+        "lang": "en",
+        "text": "I gave the book to my friend",
+        "tokens": [
+          { "id": "s0", "form": "I", "lemma": "I", "pos": "pronoun", "features": [ ] },
+          { "id": "s1", "form": "gave", "lemma": "give", "pos": "verb", "features": [ "past" ] },
+          { "id": "s2", "form": "the", "lemma": "the", "pos": "determiner", "features": [ "definite" ] },
+          { "id": "s3", "form": "book", "lemma": "book", "pos": "noun", "features": [ "singular" ] },
+          { "id": "s4", "form": "to", "lemma": "to", "pos": "preposition", "features": [ ] },
+          { "id": "s5", "form": "my", "lemma": "my", "pos": "determiner", "features": [ "1st_person", "singular", "possessive" ] },
+          { "id": "s6", "form": "friend", "lemma": "friend", "pos": "noun", "features": [ "singular" ] }
+        ]
+      },
+      "target": {
+        "lang": "eu",
+        "text": "Nire lagunari eman nion liburua",
+        "tokens": [
+          { "id": "t0", "form": "Nire", "lemma": "ni", "pos": "pronoun", "features": [ "genitive", "1st_person" ] },
+          { "id": "t1", "form": "lagunari", "lemma": "lagun", "pos": "noun", "features": [ "dative", "definite", "singular", "animate" ] },
+          { "id": "t2", "form": "eman", "lemma": "eman", "pos": "verb", "features": [ "perfective", "participle" ] },
+          { "id": "t3", "form": "nion", "lemma": "edun", "pos": "auxiliary", "features": [ "indicative", "past", "1st_person_sub", "3rd_person_obj", "3rd_person_dat", "singular" ] },
+          { "id": "t4", "form": "liburua", "lemma": "liburu", "pos": "noun", "features": [ "absolutive", "definite", "singular", "inanimate" ] }
+        ]
+      },
+      "layers": {
+        "lexical": [
+          { "source": [ "s0" ], "target": [ "t3" ], "label": "gave → eman (core meaning)" },
+          { "source": [ "s4", "s5", "s6" ], "target": [ "t3" ], "label": "gave → eman (core meaning)" },
+          { "source": [ "s1" ], "target": [ "t2" ], "label": "gave → eman (core meaning)" },
+          { "source": [ "s3" ], "target": [ "t4" ], "label": "book → liburu (in 'liburua')" },
+          { "source": [ "s6" ], "target": [ "t1" ], "label": "friend → lagun (in 'lagunari')" },
+          { "source": [ "s5" ], "target": [ "t0" ], "label": "my → nire" }
+        ],
+        "grammatical_relations": [
+          { "source": [ "s0" ], "target": [ "t3" ], "label": "subject (ergative): 'I' → 1st person subject agreement in 'nion'" },
+          { "source": [ "s2", "s3" ], "target": [ "t4" ], "label": "direct object (absolutive): 'the book' → 'liburua' (definite absolutive)" },
+          { "source": [ "s4", "s5", "s6" ], "target": [ "t0", "t1" ], "label": "indirect object (dative): 'to my friend' → 'nire lagunari' (dative case)" },
+          { "source": [ "s4", "s5", "s6" ], "target": [ "t3" ], "label": "indirect object agreement: 'to my friend' → 3rd person dative agreement in 'nion'" }
+        ],
+        "features": [
+          { "source": [ "s1" ], "target": [ "t3" ], "label": "tense: past 'gave' → past tense in auxiliary 'nion'" },
+          { "source": [ "s1" ], "target": [ "t2" ], "label": "aspect: completed 'gave' → perfective participle 'eman'" },
+          { "source": [ "s2" ], "target": [ "t4" ], "label": "definiteness: 'the' → '-a' suffix in 'liburua'" },
+          { "source": [ "s2" ], "target": [ "t1" ], "label": "definiteness: 'the' (implicit in 'my friend') → '-a' in 'lagunari'" },
+          { "source": [ "s4" ], "target": [ "t1" ], "label": "dative case: preposition 'to' → '-ri' dative suffix in 'lagunari'" },
+          { "source": [ "s4" ], "target": [ "t3" ], "label": "dative agreement: 'to' → 3rd person dative in 'nion'" },
+          { "source": [ "s0" ], "target": [ "t3" ], "label": "person/number agreement: 'I' → 1st person ergative in 'nion'" },
+          { "source": [ "s5" ], "target": [ "t0" ], "label": "possession: 'my' → genitive 'nire'" }
+        ]
+      }
+    }
+  ]
+}
