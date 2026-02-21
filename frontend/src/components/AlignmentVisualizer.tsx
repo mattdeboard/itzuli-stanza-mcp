@@ -19,6 +19,10 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
   const [targetPositions, setTargetPositions] = useState<TokenPosition[]>([])
   const [hoveredTokens, setHoveredTokens] = useState<Set<string>>(new Set())
   const [highlightedAlignments, setHighlightedAlignments] = useState<Set<number>>(new Set())
+  const [pinnedTokenId, setPinnedTokenId] = useState<string | null>(null)
+  const [pinnedIsSource, setPinnedIsSource] = useState<boolean>(false)
+  const [animatingRibbons, setAnimatingRibbons] = useState<Set<number>>(new Set())
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState<boolean>(false)
 
   const updateTokenPositions = useCallback(() => {
     if (!containerRef.current) return
@@ -84,16 +88,70 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
     return () => window.removeEventListener('resize', handleResize)
   }, [updateTokenPositions, sentencePair])
 
+  // Reset initial load state when sentence pair changes
+  useEffect(() => {
+    setHasInitiallyLoaded(false)
+    setHoveredTokens(new Set())
+    setHighlightedAlignments(new Set())
+    setAnimatingRibbons(new Set())
+    setPinnedTokenId(null)
+    setPinnedIsSource(false)
+  }, [sentencePair])
+
+  // Trigger initial animations when lexical layer loads
+  useEffect(() => {
+    if (sourcePositions.length > 0 && targetPositions.length > 0 && !hasInitiallyLoaded) {
+      // Mark as initially loaded
+      setHasInitiallyLoaded(true)
+      
+      // Animate all ribbons on initial load with staggered timing
+      const allAlignmentIndices = sentencePair.layers.lexical.map((_, index) => index)
+      
+      // Start staggered animations for all ribbons
+      allAlignmentIndices.forEach((alignmentIndex, order) => {
+        setTimeout(() => {
+          setAnimatingRibbons(prev => new Set([...prev, alignmentIndex]))
+        }, order * 150 + 50) // 150ms stagger, 50ms initial delay
+      })
+
+      // Show all ribbons as highlighted during initial load
+      setHighlightedAlignments(new Set(allAlignmentIndices))
+      
+      // Clear the highlight after all animations complete
+      const totalDuration = allAlignmentIndices.length * 150 + 50 + 400 // stagger + delay + animation duration
+      setTimeout(() => {
+        setHighlightedAlignments(new Set())
+        setAnimatingRibbons(new Set())
+      }, totalDuration)
+    }
+  }, [sourcePositions, targetPositions, sentencePair.layers.lexical, hasInitiallyLoaded])
+
+
+  // Calculate path length for SVG animation
+  const calculatePathLength = useCallback((path: string): number => {
+    // Create a temporary SVG element to calculate path length
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    pathElement.setAttribute('d', path)
+    svg.appendChild(pathElement)
+    document.body.appendChild(svg)
+    const length = pathElement.getTotalLength()
+    document.body.removeChild(svg)
+    return length
+  }, [])
+
   const handleTokenHover = useCallback((tokenId: string, isSource: boolean) => {
     const newHoveredTokens = new Set([tokenId])
     const newHighlightedAlignments = new Set<number>()
 
+    const connectedAlignments: number[] = []
     sentencePair.layers.lexical.forEach((alignment, index) => {
       const isConnected = isSource
         ? alignment.source.includes(tokenId)
         : alignment.target.includes(tokenId)
 
       if (isConnected) {
+        connectedAlignments.push(index)
         newHighlightedAlignments.add(index)
         // Add connected tokens
         alignment.source.forEach(id => newHoveredTokens.add(id))
@@ -101,14 +159,127 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
       }
     })
 
+    // If something is pinned, this becomes a secondary preview
+    if (pinnedTokenId) {
+      // Merge with pinned tokens but keep them visually distinct
+      const pinnedTokens = new Set<string>()
+      const pinnedAlignments = new Set<number>()
+      
+      sentencePair.layers.lexical.forEach((alignment, index) => {
+        const isConnectedToPinned = pinnedIsSource
+          ? alignment.source.includes(pinnedTokenId)
+          : alignment.target.includes(pinnedTokenId)
+
+        if (isConnectedToPinned) {
+          pinnedAlignments.add(index)
+          alignment.source.forEach(id => pinnedTokens.add(id))
+          alignment.target.forEach(id => pinnedTokens.add(id))
+        }
+      })
+
+      // Add pinned tokens to hover set with special identifier
+      pinnedTokens.forEach(id => newHoveredTokens.add(id))
+      pinnedAlignments.forEach(idx => newHighlightedAlignments.add(idx))
+    }
+
+    // Start staggered animations for all connected alignments
+    // First, clear any existing animations for these ribbons
+    setAnimatingRibbons(prev => {
+      const newSet = new Set(prev)
+      connectedAlignments.forEach(idx => newSet.delete(idx))
+      return newSet
+    })
+    
+    // Then start staggered animations with delays
+    connectedAlignments.forEach((alignmentIndex, order) => {
+      setTimeout(() => {
+        setAnimatingRibbons(prev => new Set([...prev, alignmentIndex]))
+      }, order * 100 + 10) // Small delay for stagger
+    })
+
     setHoveredTokens(newHoveredTokens)
     setHighlightedAlignments(newHighlightedAlignments)
-  }, [sentencePair.layers.lexical, sourcePositions, targetPositions])
+  }, [sentencePair.layers.lexical, pinnedTokenId, pinnedIsSource, highlightedAlignments])
 
   const handleTokenLeave = useCallback(() => {
-    setHoveredTokens(new Set())
-    setHighlightedAlignments(new Set())
-  }, [])
+    if (pinnedTokenId) {
+      // Restore to pinned state only
+      const pinnedTokens = new Set<string>()
+      const pinnedAlignments = new Set<number>()
+      
+      sentencePair.layers.lexical.forEach((alignment, index) => {
+        const isConnectedToPinned = pinnedIsSource
+          ? alignment.source.includes(pinnedTokenId)
+          : alignment.target.includes(pinnedTokenId)
+
+        if (isConnectedToPinned) {
+          pinnedAlignments.add(index)
+          alignment.source.forEach(id => pinnedTokens.add(id))
+          alignment.target.forEach(id => pinnedTokens.add(id))
+        }
+      })
+
+      setHoveredTokens(pinnedTokens)
+      setHighlightedAlignments(pinnedAlignments)
+      // Keep pinned ribbons animated
+      setAnimatingRibbons(pinnedAlignments)
+    } else {
+      setHoveredTokens(new Set())
+      setHighlightedAlignments(new Set())
+      setAnimatingRibbons(new Set())
+    }
+  }, [pinnedTokenId, pinnedIsSource, sentencePair.layers.lexical])
+
+  const handleTokenClick = useCallback((tokenId: string, isSource: boolean) => {
+    // Toggle pin state
+    if (pinnedTokenId === tokenId) {
+      // Unpin
+      setPinnedTokenId(null)
+      setPinnedIsSource(false)
+      setHoveredTokens(new Set())
+      setHighlightedAlignments(new Set())
+      setAnimatingRibbons(new Set())
+    } else {
+      // Pin this token
+      setPinnedTokenId(tokenId)
+      setPinnedIsSource(isSource)
+      
+      const newHoveredTokens = new Set([tokenId])
+      const newHighlightedAlignments = new Set<number>()
+      
+      const connectedAlignments: number[] = []
+      sentencePair.layers.lexical.forEach((alignment, index) => {
+        const isConnected = isSource
+          ? alignment.source.includes(tokenId)
+          : alignment.target.includes(tokenId)
+
+        if (isConnected) {
+          connectedAlignments.push(index)
+          newHighlightedAlignments.add(index)
+          alignment.source.forEach(id => newHoveredTokens.add(id))
+          alignment.target.forEach(id => newHoveredTokens.add(id))
+        }
+      })
+
+      // Start staggered animations for pinned state
+      // First, clear any existing animations for these ribbons
+      setAnimatingRibbons(prev => {
+        const newSet = new Set(prev)
+        connectedAlignments.forEach(idx => newSet.delete(idx))
+        return newSet
+      })
+      
+      // Then start staggered animations with delays
+      connectedAlignments.forEach((alignmentIndex, order) => {
+        setTimeout(() => {
+          setAnimatingRibbons(prev => new Set([...prev, alignmentIndex]))
+        }, order * 100 + 10)
+      })
+
+      setHoveredTokens(newHoveredTokens)
+      setHighlightedAlignments(newHighlightedAlignments)
+    }
+  }, [pinnedTokenId, sentencePair.layers.lexical])
 
   const createRibbonPath = (alignment: Alignment, index: number) => {
     // Find positions for source and target tokens
@@ -157,7 +328,29 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
 
     const isHighlighted = highlightedAlignments.has(index)
     const isDimmed = highlightedAlignments.size > 0 && !isHighlighted
-    const opacity = isHighlighted ? 1 : (isDimmed ? 0.15 : 0.6)
+    const isAnimating = animatingRibbons.has(index)
+    
+    // Determine if this ribbon is part of the pinned set
+    const isPinnedRibbon = pinnedTokenId ? sentencePair.layers.lexical[index] && 
+      (pinnedIsSource 
+        ? sentencePair.layers.lexical[index].source.includes(pinnedTokenId)
+        : sentencePair.layers.lexical[index].target.includes(pinnedTokenId)
+      ) : false
+    
+    // Different opacity for pinned vs hovered ribbons
+    const opacity = isHighlighted 
+      ? (isPinnedRibbon ? 1 : 0.7) // Pinned ribbons at full opacity, hover preview at 70%
+      : (isDimmed ? 0.15 : 0.6)
+
+    // Calculate path length for animation (using a simpler approach)
+    let pathLength: number
+    try {
+      pathLength = calculatePathLength(ribbonPath)
+      // Ensure minimum path length for animation to be visible
+      if (pathLength < 50) pathLength = 150
+    } catch {
+      pathLength = 150 // fallback length
+    }
 
     return (
       <g key={`ribbon-group-${index}`}>
@@ -169,6 +362,11 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
           strokeWidth="3"
           opacity={opacity}
           className="transition-opacity duration-300"
+          strokeDasharray={isHighlighted || !hasInitiallyLoaded ? `${pathLength}` : undefined}
+          strokeDashoffset={isHighlighted || !hasInitiallyLoaded ? (isAnimating ? '0' : `${pathLength}`) : undefined}
+          style={isHighlighted ? {
+            transition: 'stroke-dashoffset 400ms ease-out'
+          } : undefined}
         />
 
         {/* Source connection dot */}
@@ -177,8 +375,11 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
           cy={sourceDotY}
           r="4"
           fill="#3b82f6"
-          opacity={opacity}
-          className="transition-opacity duration-300"
+          opacity={isHighlighted && isAnimating ? opacity : (isHighlighted ? 0 : opacity)}
+          className="transition-all duration-300"
+          style={isHighlighted ? {
+            transitionDelay: isAnimating ? '300ms' : '0ms'
+          } : undefined}
         />
 
         {/* Target connection dot */}
@@ -187,8 +388,11 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
           cy={targetDotY}
           r="4"
           fill="#3b82f6"
-          opacity={opacity}
-          className="transition-opacity duration-300"
+          opacity={isHighlighted && isAnimating ? opacity : (isHighlighted ? 0 : opacity)}
+          className="transition-all duration-300"
+          style={isHighlighted ? {
+            transitionDelay: isAnimating ? '350ms' : '0ms'
+          } : undefined}
         />
 
       </g>
@@ -209,6 +413,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
           {sentencePair.source.tokens.map((token) => {
             const isHovered = hoveredTokens.has(token.id)
             const isDimmed = hoveredTokens.size > 0 && !isHovered
+            const isPinned = pinnedTokenId === token.id
             const isConnected = sentencePair.layers.lexical.some(alignment =>
               alignment.source.includes(token.id)
             )
@@ -216,11 +421,12 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
             return (
               <span
                 key={token.id}
-                className={`token ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--source' : ''}`}
+                className={`token ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--source' : ''} ${isPinned ? 'token--pinned' : ''}`}
                 data-token-id={token.id}
                 data-token-type="source"
                 onMouseEnter={() => handleTokenHover(token.id, true)}
                 onMouseLeave={handleTokenLeave}
+                onClick={() => handleTokenClick(token.id, true)}
               >
                 {token.form}
               </span>
@@ -253,6 +459,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
           {sentencePair.target.tokens.map((token) => {
             const isHovered = hoveredTokens.has(token.id)
             const isDimmed = hoveredTokens.size > 0 && !isHovered
+            const isPinned = pinnedTokenId === token.id
             const isConnected = sentencePair.layers.lexical.some(alignment =>
               alignment.target.includes(token.id)
             )
@@ -260,11 +467,12 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
             return (
               <span
                 key={token.id}
-                className={`token ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--target' : ''}`}
+                className={`token ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--target' : ''} ${isPinned ? 'token--pinned' : ''}`}
                 data-token-id={token.id}
                 data-token-type="target"
                 onMouseEnter={() => handleTokenHover(token.id, false)}
                 onMouseLeave={handleTokenLeave}
+                onClick={() => handleTokenClick(token.id, false)}
               >
                 {token.form}
               </span>

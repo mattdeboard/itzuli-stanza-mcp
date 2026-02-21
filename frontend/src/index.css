@@ -34,6 +34,10 @@
   .token--connected.token--target::after {
     @apply top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
   }
+
+  .token--pinned {
+    @apply ring-2 ring-ribbon-blue ring-opacity-60 bg-blue-50 border-ribbon-blue shadow-sm;
+  }
   
   .ribbon {
     @apply opacity-30 transition-opacity duration-300;
