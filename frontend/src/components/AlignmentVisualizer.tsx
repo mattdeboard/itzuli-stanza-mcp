@@ -557,7 +557,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
           {sentencePair.source.text}
         </div>
         <div
-          className="flex gap-2 sm:gap-3 lg:gap-4 items-center overflow-x-auto pb-1 pt-1 scrollbar-none justify-start sm:justify-center px-2 sm:px-0"
+          className="flex gap-2 sm:gap-3 lg:gap-4 items-center overflow-x-auto pb-1 pt-1 scrollbar-none justify-start px-2 sm:px-0"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           role="list"
           aria-label="Source sentence tokens - click to highlight connections"
@@ -573,17 +573,17 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
             return (
               <button
                 key={token.id}
-                className={`token flex-shrink-0 ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--source' : ''} ${isPinned ? 'token--pinned' : ''}`}
+                className={`token flex-shrink-0 ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--source' : 'token--disconnected'} ${isPinned ? 'token--pinned' : ''}`}
                 data-token-id={token.id}
                 data-token-type="source"
-                onMouseEnter={() => handleTokenHover(token.id, true)}
+                onMouseEnter={() => isConnected && handleTokenHover(token.id, true)}
                 onMouseLeave={handleTokenLeave}
-                onClick={() => handleTokenClick(token.id, true)}
+                onClick={() => isConnected && handleTokenClick(token.id, true)}
                 role="listitem"
-                aria-label={`Source word: ${token.form}${isConnected ? ` - has ${sentencePair.layers[vizLayer].filter(a => a.source.includes(token.id)).length} alignment connections` : ' - no connections'}${isPinned ? ', currently pinned' : '. Press Enter or Space to pin and explore connections'}`}
+                aria-label={`Source word: ${token.form}${isConnected ? ` - has ${sentencePair.layers[vizLayer].filter(a => a.source.includes(token.id)).length} alignment connections` : ' - no connections in this layer'}${isPinned ? ', currently pinned' : isConnected ? '. Press Enter or Space to pin and explore connections' : ''}`}
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
+                  if (isConnected && (e.key === 'Enter' || e.key === ' ')) {
                     e.preventDefault()
                     handleTokenClick(token.id, true)
                   }
@@ -623,7 +623,7 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
         role="region"
       >
         <div
-          className="flex gap-2 sm:gap-3 lg:gap-4 items-center mb-1 overflow-x-auto pt-1 scrollbar-none justify-start sm:justify-center px-2 sm:px-0"
+          className="flex gap-2 sm:gap-3 lg:gap-4 items-center mb-1 overflow-x-auto pt-1 scrollbar-none justify-start px-2 sm:px-0"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           role="list"
           aria-label="Target sentence tokens - click to highlight connections"
@@ -639,17 +639,17 @@ export function AlignmentVisualizer({ sentencePair }: AlignmentVisualizerProps) 
             return (
               <button
                 key={token.id}
-                className={`token flex-shrink-0 ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--target' : ''} ${isPinned ? 'token--pinned' : ''}`}
+                className={`token flex-shrink-0 ${isHovered ? 'token--highlighted' : ''} ${isDimmed ? 'token--dimmed' : ''} ${isConnected ? 'token--connected token--target' : 'token--disconnected'} ${isPinned ? 'token--pinned' : ''}`}
                 data-token-id={token.id}
                 data-token-type="target"
-                onMouseEnter={() => handleTokenHover(token.id, false)}
+                onMouseEnter={() => isConnected && handleTokenHover(token.id, false)}
                 onMouseLeave={handleTokenLeave}
-                onClick={() => handleTokenClick(token.id, false)}
+                onClick={() => isConnected && handleTokenClick(token.id, false)}
                 role="listitem"
-                aria-label={`Target word: ${token.form}${isConnected ? ` - has ${sentencePair.layers[vizLayer].filter(a => a.target.includes(token.id)).length} alignment connections` : ' - no connections'}${isPinned ? ', currently pinned' : '. Press Enter or Space to pin and explore connections'}`}
+                aria-label={`Target word: ${token.form}${isConnected ? ` - has ${sentencePair.layers[vizLayer].filter(a => a.target.includes(token.id)).length} alignment connections` : ' - no connections in this layer'}${isPinned ? ', currently pinned' : isConnected ? '. Press Enter or Space to pin and explore connections' : ''}`}
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
+                  if (isConnected && (e.key === 'Enter' || e.key === ' ')) {
                     e.preventDefault()
                     handleTokenClick(token.id, false)
                   }

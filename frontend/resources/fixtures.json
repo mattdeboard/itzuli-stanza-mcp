@@ -88,6 +88,75 @@
           { "source": [ "s5" ], "target": [ "t0" ], "label": "possession: 'my' → genitive 'nire'" }
         ]
       }
+    },
+    {
+      "id": "ex3",
+      "source": {
+        "lang": "en",
+        "text": "I'm going to the bookstore with my mom tomorrow to buy a new book",
+        "tokens": [
+          { "id": "s0", "form": "I'm", "lemma": "I", "pos": "pronoun", "features": [ "1st_person", "singular" ] },
+          { "id": "s1", "form": "going", "lemma": "go", "pos": "verb", "features": [ "progressive", "present" ] },
+          { "id": "s2", "form": "to", "lemma": "to", "pos": "preposition", "features": [ ] },
+          { "id": "s3", "form": "the", "lemma": "the", "pos": "determiner", "features": [ "definite" ] },
+          { "id": "s4", "form": "bookstore", "lemma": "bookstore", "pos": "noun", "features": [ "singular" ] },
+          { "id": "s5", "form": "with", "lemma": "with", "pos": "preposition", "features": [ ] },
+          { "id": "s6", "form": "my", "lemma": "my", "pos": "determiner", "features": [ "1st_person", "singular", "possessive" ] },
+          { "id": "s7", "form": "mom", "lemma": "mom", "pos": "noun", "features": [ "singular" ] },
+          { "id": "s8", "form": "tomorrow", "lemma": "tomorrow", "pos": "adverb", "features": [ ] },
+          { "id": "s9", "form": "to", "lemma": "to", "pos": "preposition", "features": [ ] },
+          { "id": "s10", "form": "buy", "lemma": "buy", "pos": "verb", "features": [ "infinitive" ] },
+          { "id": "s11", "form": "a", "lemma": "a", "pos": "determiner", "features": [ "indefinite" ] },
+          { "id": "s12", "form": "new", "lemma": "new", "pos": "adjective", "features": [ ] },
+          { "id": "s13", "form": "book", "lemma": "book", "pos": "noun", "features": [ "singular" ] }
+        ]
+      },
+      "target": {
+        "lang": "eu",
+        "text": "Liburu dendara joango naiz amarekin bihar liburu berri bat erostera",
+        "tokens": [
+          { "id": "t0", "form": "Liburu", "lemma": "liburu", "pos": "noun", "features": [ ] },
+          { "id": "t1", "form": "dendara", "lemma": "denda", "pos": "noun", "features": [ "allative", "definite", "singular" ] },
+          { "id": "t2", "form": "joango", "lemma": "joan", "pos": "verb", "features": [ "prospective", "participle" ] },
+          { "id": "t3", "form": "naiz", "lemma": "izan", "pos": "auxiliary", "features": [ "indicative", "1st_person_obj", "singular" ] },
+          { "id": "t4", "form": "amarekin", "lemma": "ama", "pos": "noun", "features": [ "comitative", "definite", "singular" ] },
+          { "id": "t5", "form": "bihar", "lemma": "bihar", "pos": "adverb", "features": [ ] },
+          { "id": "t6", "form": "liburu", "lemma": "liburu", "pos": "noun", "features": [ ] },
+          { "id": "t7", "form": "berri", "lemma": "berri", "pos": "adjective", "features": [ ] },
+          { "id": "t8", "form": "bat", "lemma": "bat", "pos": "numeral", "features": [ "cardinal" ] },
+          { "id": "t9", "form": "erostera", "lemma": "erosi", "pos": "verb", "features": [ "allative" ] }
+        ]
+      },
+      "layers": {
+        "lexical": [
+          { "source": [ "s1" ], "target": [ "t2" ], "label": "going → joan (core meaning)" },
+          { "source": [ "s4" ], "target": [ "t0", "t1" ], "label": "bookstore → liburu denda (compound: book + store)" },
+          { "source": [ "s7" ], "target": [ "t4" ], "label": "mom → ama (in 'amarekin')" },
+          { "source": [ "s8" ], "target": [ "t5" ], "label": "tomorrow → bihar" },
+          { "source": [ "s10" ], "target": [ "t9" ], "label": "buy → erosi (in 'erostera')" },
+          { "source": [ "s12" ], "target": [ "t7" ], "label": "new → berri" },
+          { "source": [ "s13" ], "target": [ "t6" ], "label": "book → liburu" }
+        ],
+        "grammatical_relations": [
+          { "source": [ "s0" ], "target": [ "t3" ], "label": "subject (absolutive): 'I' → 1st person subject agreement in 'naiz' (intransitive verb takes absolutive, not ergative)" },
+          { "source": [ "s2", "s3", "s4" ], "target": [ "t0", "t1" ], "label": "directional goal (allative): 'to the bookstore' → 'liburu dendara' (-ra = allative, motion toward)" },
+          { "source": [ "s5", "s6", "s7" ], "target": [ "t4" ], "label": "accompaniment (comitative): 'with my mom' → 'amarekin' (-rekin = comitative case)" },
+          { "source": [ "s9", "s10" ], "target": [ "t9" ], "label": "purpose (allative): 'to buy' → 'erostera' (-ra = allative expressing purpose)" },
+          { "source": [ "s11", "s12", "s13" ], "target": [ "t6", "t7", "t8" ], "label": "direct object: 'a new book' → 'liburu berri bat'" }
+        ],
+        "features": [
+          { "source": [ "s1" ], "target": [ "t2" ], "label": "aspect: 'going' (progressive/future) → 'joango' (prospective -ko/-go)" },
+          { "source": [ "s1" ], "target": [ "t3" ], "label": "auxiliary: progressive 'am going' → intransitive auxiliary 'naiz' (izan, not edun — motion verb is intransitive)" },
+          { "source": [ "s0" ], "target": [ "t3" ], "label": "person/number agreement: 'I' → 1st person singular in 'naiz'" },
+          { "source": [ "s2" ], "target": [ "t1" ], "label": "direction: preposition 'to' → allative suffix '-ra' on 'dendara'" },
+          { "source": [ "s3" ], "target": [ "t1" ], "label": "definiteness: 'the' → '-a' definite suffix in 'dendara' (denda + -a + -ra)" },
+          { "source": [ "s5" ], "target": [ "t4" ], "label": "comitative case: preposition 'with' → '-rekin' suffix on 'amarekin'" },
+          { "source": [ "s6" ], "target": [ "t4" ], "label": "possession (implicit): 'my' → absorbed into context; Basque doesn't mark possessive on 'amarekin'" },
+          { "source": [ "s9" ], "target": [ "t9" ], "label": "purpose: infinitival 'to' → allative '-ra' on 'erostera' (motion-toward = purpose)" },
+          { "source": [ "s11" ], "target": [ "t8" ], "label": "indefiniteness: 'a' → 'bat' (numeral 'one' used as indefinite article)" },
+          { "source": [ "s12" ], "target": [ "t7" ], "label": "adjective position: 'new' precedes noun in English → 'berri' follows noun in Basque" }
+        ]
+      }
     }
   ]
 }

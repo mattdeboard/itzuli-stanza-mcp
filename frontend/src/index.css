@@ -8,6 +8,11 @@
   * {
     @apply border-slate-200;
   }
+
+  /* Prevent Firefox back/forward gesture on horizontal scroll in token areas */
+  .overflow-x-auto {
+    overscroll-behavior-x: contain;
+  }
   
   body {
     @apply font-sans text-slate-700 bg-tan-50;
@@ -53,6 +58,23 @@
   .token--pinned {
     @apply ring-2 ring-sage-500/60 bg-sage-100/80 border-sage-600 shadow-lg backdrop-blur-sm;
   }
+
+  .token--disconnected {
+    @apply cursor-default opacity-60;
+    /* Ensure disconnected tokens still participate in normal flex layout */
+    flex-shrink: 0 !important;
+    position: relative !important;
+    /* Remove any pseudo-element positioning from disconnected tokens */
+  }
+
+  .token--disconnected::after {
+    display: none !important;
+  }
+
+  .token--disconnected:hover {
+    @apply border-slate-200 bg-white/80 shadow-none;
+  }
+
   
   .ribbon {
     @apply opacity-40 transition-all duration-300 ease-out;
