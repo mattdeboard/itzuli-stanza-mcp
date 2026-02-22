@@ -43,15 +43,22 @@ Model Context Protocol bidez itzulpena eta analisi morfologikoa eskaintzen ditu.
 
 ### API Gakoaren Konfigurazioa
 
-Itzuli itzulpen zerbitzua erabiltzeko, API gako bat behar duzu:
+Zerbitzuak erabiltzeko, API gakoak behar dituzu:
+
+**Itzuli Itzulpen API:**
 
 1. API gako bat eskatu [https://itzuli.vicomtech.org/en/api/](https://itzuli.vicomtech.org/en/api/) helbidean
 2. `ITZULI_API_KEY` ingurumen aldagaia ezarri
 
+**Claude API (lerrokatze sortzailerako):**
+
+1. API gako bat lortu [https://console.anthropic.com/](https://console.anthropic.com/) helbidean
+2. `CLAUDE_API_KEY` ingurumen aldagaia ezarri
+
 stdio garraio bidez funtzionatzen du.
 
 ```bash
-ITZULI_API_KEY=zure-gakoa uv run python -m mcp_server.server
+ITZULI_API_KEY=zure-itzuli-gakoa CLAUDE_API_KEY=zure-claude-gakoa uv run python -m mcp_server.server
 ```
 
 ### Tresna Scriptak
@@ -66,17 +73,26 @@ uv run python -m tools.dual_analysis "Kaixo mundua" --source eu --target en --fo
 uv run python -m tools.dual_analysis "Hello world" --source en --target eu --format json
 ```
 
-**Lerrokatze Zerbitzaria** — Frontend aplikazioentzako HTTP API:
+**Lerrokatze Zerbitzaria** — Claude bidezko lerrokatze sortzea duen frontend aplikazioentzako HTTP API:
 
 ```bash
-# Lerrokatze zerbitzaria abiarazi
+# Cache-arekin lerrokatze zerbitzaria abiarazi
+ITZULI_API_KEY=zure-itzuli-gakoa CLAUDE_API_KEY=zure-claude-gakoa \
+ALIGNMENT_CACHE_DIR=.cache/alignments \
 uv run python -m alignment_server.server
 
-# Analisi bikoitzetik scaffolda sortu (POST /analyze-and-scaffold adibidea)
+# Aberasturiko lerrokatze datuak sortu (POST /analyze-and-scaffold adibidea)
 curl -X POST "http://localhost:8000/analyze-and-scaffold" \
   -H "Content-Type: application/json" \
   -d '{"text": "Kaixo mundua", "source_lang": "eu", "target_lang": "en", "sentence_id": "adibide-001"}'
 ```
+
+Lerrokatze zerbitzariak orain eskaintzen ditu:
+
+- **Itzulpena** Itzuli APIaren bidez
+- **Analisi morfologikoa** Stanza bidez
+- **IA sorturiko lerrrokatze-ak** Claude APIaren bidez hiru geruzetan (lexikoa, erlazio gramatikalak, ezaugarriak)
+- **Fitxategi-oinarriko cache-a** eskaera berdinetarako API dei errepikaturak saihesteko
 
 ### Tresnak
 

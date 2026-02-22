@@ -5,6 +5,7 @@ description = "Basque NLP tools with Itzuli translation and Stanza morphological
 readme = "../README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "anthropic>=0.83.0",
     "dependencies>=7.7.1",
     "fastapi>=0.129.0",
     "fastmcp>=2.14.5",
