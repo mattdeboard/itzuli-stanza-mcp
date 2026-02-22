@@ -139,3 +139,21 @@
     border: 0;
   }
 }
+
+@layer utilities {
+  /* Loading indicator animations */
+  .animate-progress {
+    width: 60%;
+    animation: progress 2s ease-in-out infinite;
+  }
+  
+  .animate-reverse {
+    animation-direction: reverse;
+  }
+  
+  @keyframes progress {
+    0% { width: 30%; }
+    50% { width: 70%; }
+    100% { width: 30%; }
+  }
+}

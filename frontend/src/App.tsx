@@ -2,6 +2,7 @@ import { useSelectedSentence } from './hooks/useAlignmentData'
 import { useTranslationRequest } from './hooks/useTranslationRequest'
 import { AlignmentVisualizer } from './components/AlignmentVisualizer'
 import { TranslationInput } from './components/TranslationInput'
+import { LoadingIndicator } from './components/LoadingIndicator'
 import { useEffect, useState } from 'react'
 import { config } from './config'
 
@@ -42,13 +43,7 @@ function App() {
   }, [currentSentence])
 
   if (isLoading) {
-    return (
-      <div className="max-w-7xl mx-auto p-8">
-        <div className="text-center py-12 text-xl text-ribbon-blue">
-          {mode === 'input' ? 'Analyzing translation...' : 'Loading alignment data...'}
-        </div>
-      </div>
-    )
+    return <LoadingIndicator mode={mode} />
   }
 
   if (currentError) {
