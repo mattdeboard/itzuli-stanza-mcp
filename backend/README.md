@@ -43,15 +43,22 @@ Provides translation and morphological analysis through the Model Context Protoc
 
 ### API Key Setup
 
-To use the Itzuli translation service, you need an API key:
+To use the services, you need API keys:
+
+**Itzuli Translation API:**
 
 1. Apply for an API key at [https://itzuli.vicomtech.org/en/api/](https://itzuli.vicomtech.org/en/api/)
 2. Set the `ITZULI_API_KEY` environment variable
 
+**Claude API (for alignment generation):**
+
+1. Get an API key from [https://console.anthropic.com/](https://console.anthropic.com/)
+2. Set the `CLAUDE_API_KEY` environment variable
+
 Runs over stdio transport.
 
 ```bash
-ITZULI_API_KEY=your-key uv run python -m mcp_server.server
+ITZULI_API_KEY=your-itzuli-key CLAUDE_API_KEY=your-claude-key uv run python -m mcp_server.server
 ```
 
 ### Utility Scripts
@@ -66,17 +73,26 @@ uv run python -m tools.dual_analysis "Kaixo mundua" --source eu --target en --fo
 uv run python -m tools.dual_analysis "Hello world" --source en --target eu --format json
 ```
 
-**Alignment Server** — HTTP API for frontend applications:
+**Alignment Server** — HTTP API for frontend applications with Claude-powered alignment generation:
 
 ```bash
-# Start the alignment server
+# Start the alignment server with caching
+ITZULI_API_KEY=your-itzuli-key CLAUDE_API_KEY=your-claude-key \
+ALIGNMENT_CACHE_DIR=.cache/alignments \
 uv run python -m alignment_server.server
 
-# Generate scaffold from dual analysis (example POST to /analyze-and-scaffold)
+# Generate enriched alignment data (example POST to /analyze-and-scaffold)
 curl -X POST "http://localhost:8000/analyze-and-scaffold" \
   -H "Content-Type: application/json" \
   -d '{"text": "Kaixo mundua", "source_lang": "eu", "target_lang": "en", "sentence_id": "example-001"}'
 ```
+
+The alignment server now provides:
+
+- **Translation** via Itzuli API
+- **Morphological analysis** via Stanza
+- **AI-generated alignments** via Claude API across three layers (lexical, grammatical relations, features)
+- **File-based caching** to avoid repeated API calls for identical requests
 
 ### Tools
 

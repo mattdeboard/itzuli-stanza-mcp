@@ -12,6 +12,8 @@ from ..core.types import AnalysisRow, LanguageCode
 from tools.dual_analysis import analyze_both_texts
 from .scaffold import create_scaffold_from_dual_analysis
 from .types import AlignmentData
+from .cache import AlignmentCache
+from .alignment_generator import create_enriched_alignment_data
 
 load_dotenv()
 
@@ -23,6 +25,9 @@ app = FastAPI(
     description="HTTP API for generating alignment scaffolds from dual language analysis",
     version="0.1.0"
 )
+
+# Initialize cache
+cache = AlignmentCache()
 
 
 class AnalysisRequest(BaseModel):
@@ -89,37 +94,51 @@ async def analyze_texts(request: AnalysisRequest):
 @app.post("/analyze-and-scaffold", response_model=AlignmentData)
 async def analyze_and_scaffold(request: AnalysisRequest):
     """
-    Combined endpoint: analyze both texts and generate scaffold in one call.
+    Combined endpoint: analyze both texts, generate scaffold, and enrich with Claude-generated alignments.
     """
-    api_key = os.environ.get("ITZULI_API_KEY")
-    if not api_key:
+    itzuli_api_key = os.environ.get("ITZULI_API_KEY")
+    if not itzuli_api_key:
         raise HTTPException(status_code=500, detail="ITZULI_API_KEY not configured")
     
+    claude_api_key = os.environ.get("CLAUDE_API_KEY")
+    if not claude_api_key:
+        raise HTTPException(status_code=500, detail="CLAUDE_API_KEY not configured")
+    
+    # Check cache first
+    cached_data = cache.get(request.text, request.source_lang, request.target_lang)
+    if cached_data:
+        logger.info(f"Cache hit for text: {request.text[:50]}...")
+        return cached_data
+    
     try:
-        # First perform dual analysis
+        # Perform dual analysis
         source_analysis, target_analysis, translated_text = analyze_both_texts(
-            api_key=api_key,
+            api_key=itzuli_api_key,
             text=request.text,
             source_lang=request.source_lang,
             target_lang=request.target_lang
         )
         
-        # Then generate scaffold
-        alignment_data = create_scaffold_from_dual_analysis(
+        # Generate enriched alignment data with Claude
+        alignment_data = create_enriched_alignment_data(
             source_analysis=source_analysis,
             target_analysis=target_analysis,
             source_lang=request.source_lang,
             target_lang=request.target_lang,
             source_text=request.text,
             target_text=translated_text,
-            sentence_id=request.sentence_id
+            sentence_id=request.sentence_id,
+            claude_api_key=claude_api_key
         )
+        
+        # Cache the result
+        cache.set(request.text, request.source_lang, request.target_lang, alignment_data)
         
         return alignment_data
         
     except Exception as e:
-        logger.error(f"Analysis and scaffold generation failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Analysis and scaffold generation failed: {str(e)}")
+        logger.error(f"Analysis and alignment generation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Analysis and alignment generation failed: {str(e)}")
 
 
 if __name__ == "__main__":

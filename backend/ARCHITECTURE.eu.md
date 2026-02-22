@@ -24,8 +24,11 @@ src/itzuli_nlp/            # Python pakete nagusia
 │   ├── services.py        # MCP itsaste geruza (bilgarri mehea)
 │   └── __init__.py
 ├── alignment_server/      # Frontend aplikazioentzako HTTP API
-│   ├── server.py          # FastAPI HTTP zerbitzaria
+│   ├── server.py          # Cache-arekin FastAPI HTTP zerbitzaria
 │   ├── scaffold.py        # Lerrokatze scaffold sortzea
+│   ├── claude_client.py   # Lerrokatze sortzearen Claude API integrazioa
+│   ├── alignment_generator.py  # Aberasturiko lerrokatze datuen zerbitzu geruza
+│   ├── cache.py           # Lerrokatze emaitzen fitxategi-oinarriko JSON cache-a
 │   ├── types.py           # Lerrokatze-rentzako Pydantic mota zehatzak
 │   └── __init__.py
 └── __init__.py
@@ -122,9 +125,10 @@ CLAUDE.md                  # Garapen gidalerroak
 **HTTP API Zerbitzaria (`server.py`)**
 
 - **Teknologia**: HTTP REST APIrako FastAPI
-- **Helburua**: Frontend aplikazioentzako lerrokatze scaffoldak sortu
-- **Amaiera-puntuak**: `/analyze`, `/scaffold`, `/analyze-and-scaffold`, `/health`
-- **Diseinua**: Hizkuntza bikoitzeko analiși eta lerrokatze datuen sortzearen REST API
+- **Helburua**: Frontend aplikazioentzako aberasturiko lerrokatze datuak sortu
+- **Amaiera-puntuak**: `/analyze`, `/analyze-and-scaffold`, `/health`
+- **Ezaugarriak**: Claude API integrazioa, fitxategi-oinarriko cache-a, lerrokatze datu osoen sortzea
+- **Diseinua**: Cache-lehentasunarekin REST API hizkuntza bikoitzeko analisiaren eta IA bidezko lerrokatze sortzearen
 
 **Scaffold Sortzea Modulua (`scaffold.py`)**
 
@@ -132,6 +136,26 @@ CLAUDE.md                  # Garapen gidalerroak
 - **Funtzioak**: `create_scaffold_from_dual_analysis()`, `load_alignment_data()`, `save_alignment_data()`
 - **Diseinua**: Analisi linguistikoa Pydantic motetak jarraitzen dituen egituraturiko lerrokatze datuetan eraldatzen du
 - **Irteera**: Frontend bistaratzearentzako JSON lerrokatze datuak prest
+
+**Claude API Bezeroa (`claude_client.py`)**
+
+- **Helburua**: Lerrokatze sortzearen Anthropic-en Claude API integrazioa
+- **Teknologia**: Egituraturiko JSON lerrokatze erantzunetarako Claude 3.5 Sonnet
+- **Ezaugarriak**: Lexiko, gramatika eta ezaugarri lerrokatzeentzako prompt ingeniaritza
+- **Diseinua**: API erantzunetarako fall-back kudeaketa duen JSON parsing sendoa
+
+**Lerrokatze Sortzea Zerbitzua (`alignment_generator.py`)**
+
+- **Helburua**: Scaffold sortzea eta Claude aberastea orkestratzen duen zerbitzu geruza
+- **Funtzioak**: `generate_alignments_for_scaffold()`, `create_enriched_alignment_data()`
+- **Diseinua**: Scaffold sortzea Claude bidezko lerrokatze geruzeskin konbinatzen du
+
+**Fitxategi-oinarriko Cache-a (`cache.py`)**
+
+- **Helburua**: API dei errepikaturak saihesteko cache iraunkorra
+- **Teknologia**: JSON fitxategi biltegiratzea duten SHA256 hash gakoak
+- **Ezaugarriak**: Cache hit/miss log-a, konfiguragarria den cache direktorioa
+- **Diseinua**: `AlignmentData` objektu osoentzako gako-balio biltegia sinplea
 
 **Lerrokatze Motak Modulua (`types.py`)**
 

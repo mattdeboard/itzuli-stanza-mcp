@@ -24,8 +24,11 @@ src/itzuli_nlp/            # Main Python package
 │   ├── services.py        # MCP glue layer (thin wrapper)
 │   └── __init__.py
 ├── alignment_server/      # HTTP API for frontend applications
-│   ├── server.py          # FastAPI HTTP server
+│   ├── server.py          # FastAPI HTTP server with caching
 │   ├── scaffold.py        # Alignment scaffold generation
+│   ├── claude_client.py   # Claude API integration for alignment generation
+│   ├── alignment_generator.py  # Service layer for enriched alignment data
+│   ├── cache.py           # File-based JSON cache for alignment results
 │   ├── types.py           # Alignment-specific Pydantic types
 │   └── __init__.py
 └── __init__.py
@@ -122,9 +125,10 @@ CLAUDE.md                  # Development guidelines
 **HTTP API Server (`server.py`)**
 
 - **Technology**: FastAPI for HTTP REST API
-- **Purpose**: Generate alignment scaffolds for frontend applications
-- **Endpoints**: `/analyze`, `/scaffold`, `/analyze-and-scaffold`, `/health`
-- **Design**: RESTful API for dual-language analysis and alignment data generation
+- **Purpose**: Generate enriched alignment data for frontend applications
+- **Endpoints**: `/analyze`, `/analyze-and-scaffold`, `/health`
+- **Features**: Claude API integration, file-based caching, complete alignment data generation
+- **Design**: Cache-first RESTful API for dual-language analysis and AI-powered alignment generation
 
 **Scaffold Generation Module (`scaffold.py`)**
 
@@ -132,6 +136,26 @@ CLAUDE.md                  # Development guidelines
 - **Functions**: `create_scaffold_from_dual_analysis()`, `load_alignment_data()`, `save_alignment_data()`
 - **Design**: Transforms linguistic analysis into structured alignment data conforming to Pydantic types
 - **Output**: JSON alignment data ready for frontend visualization
+
+**Claude API Client (`claude_client.py`)**
+
+- **Purpose**: Integration with Anthropic's Claude API for alignment generation
+- **Technology**: Claude 3.5 Sonnet for structured JSON alignment responses
+- **Features**: Prompt engineering for lexical, grammatical, and feature alignments
+- **Design**: Robust JSON parsing with fallback handling for API responses
+
+**Alignment Generation Service (`alignment_generator.py`)**
+
+- **Purpose**: Service layer orchestrating scaffold creation and Claude enrichment
+- **Functions**: `generate_alignments_for_scaffold()`, `create_enriched_alignment_data()`
+- **Design**: Combines scaffold generation with Claude-powered alignment layers
+
+**File-based Cache (`cache.py`)**
+
+- **Purpose**: Persistent caching to avoid repeated API calls
+- **Technology**: SHA256-hashed keys with JSON file storage
+- **Features**: Cache hit/miss logging, configurable cache directory
+- **Design**: Simple key-value store for complete `AlignmentData` objects
 
 **Alignment Types Module (`types.py`)**
 
