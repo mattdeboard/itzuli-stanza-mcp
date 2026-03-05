@@ -29,6 +29,7 @@ function App() {
   const {
     data: translationData,
     loading: translationLoading,
+    loadingStage,
     error: translationError,
     lastRequest,
     submitRequest,
@@ -68,7 +69,7 @@ function App() {
   }, [currentSentence])
 
   if (isLoading) {
-    return <LoadingIndicator mode={mode} />
+    return <LoadingIndicator mode={mode} loadingStage={loadingStage} />
   }
 
   if (currentError) {

@@ -117,10 +117,16 @@ export function createFixtureConfig(): DataSourceConfig {
   }
 }
 
+export type LoadingStage = 'itzuli' | 'stanza' | 'claude'
+
 /**
- * Submit text for translation analysis and alignment
+ * Submit text for translation analysis and alignment.
+ * Streams SSE events; calls onStage as each backend stage completes.
  */
-export async function submitTranslationRequest(request: AnalysisRequest): Promise<AlignmentData> {
+export async function submitTranslationRequest(
+  request: AnalysisRequest,
+  onStage: (stage: LoadingStage) => void
+): Promise<AlignmentData> {
   // Validate request before sending
   const validationResult = TranslationRequestSchema.safeParse({
     text: request.text,
@@ -138,7 +144,7 @@ export async function submitTranslationRequest(request: AnalysisRequest): Promis
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      Accept: 'application/json',
+      Accept: 'text/event-stream',
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -159,29 +165,45 @@ export async function submitTranslationRequest(request: AnalysisRequest): Promis
     throw new Error(errorMessage)
   }
 
-  const rawData = await response.json()
+  // Read the SSE stream
+  if (!response.body) throw new Error('Response body is null')
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
 
-  // Log the server response for debugging
-  console.log('Server response:', rawData)
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
 
-  // Validate the sentence pair response
-  const sentencePairResult = SentencePairSchema.safeParse(rawData)
-  if (!sentencePairResult.success) {
-    console.error('Server response validation failed:', sentencePairResult.error)
-    throw new Error(`Invalid server response format: ${sentencePairResult.error.message}`)
+    // SSE events are separated by \n\n
+    const events = buffer.split('\n\n')
+    buffer = events.pop() ?? '' // keep incomplete trailing chunk
+
+    for (const event of events) {
+      const line = event.trim()
+      if (!line.startsWith('data: ')) continue
+      const payload = JSON.parse(line.slice(6))
+
+      if (payload.event === 'itzuli_done') {
+        onStage('stanza')
+      } else if (payload.event === 'stanza_done') {
+        onStage('claude')
+      } else if (payload.event === 'error') {
+        throw new Error(payload.message)
+      } else if (payload.event === 'done') {
+        const sentencePairResult = SentencePairSchema.safeParse(payload.result)
+        if (!sentencePairResult.success) {
+          throw new Error(`Invalid server response format: ${sentencePairResult.error.message}`)
+        }
+        const finalResult = AlignmentDataSchema.safeParse({ sentences: [sentencePairResult.data] })
+        if (!finalResult.success) {
+          throw new Error(`Invalid alignment data format: ${finalResult.error.message}`)
+        }
+        return finalResult.data
+      }
+    }
   }
 
-  // The backend returns a single SentencePair, but we need AlignmentData format
-  const alignmentData = {
-    sentences: [sentencePairResult.data],
-  }
-
-  // Final validation of the complete response
-  const finalResult = AlignmentDataSchema.safeParse(alignmentData)
-  if (!finalResult.success) {
-    console.error('Final alignment data validation failed:', finalResult.error)
-    throw new Error(`Invalid alignment data format: ${finalResult.error.message}`)
-  }
-
-  return finalResult.data
+  throw new Error('Stream ended without a done event')
 }

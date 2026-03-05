@@ -8,7 +8,7 @@ import {
   type LanguageCode,
   TranslationRequestSchema,
 } from '../schemas/validation'
-import { type AnalysisRequest, submitTranslationRequest } from '../services/alignmentApi'
+import { type AnalysisRequest, type LoadingStage, submitTranslationRequest } from '../services/alignmentApi'
 
 export type LastRequest = {
   text: string
@@ -19,6 +19,7 @@ export type LastRequest = {
 export type UseTranslationRequestResult = {
   data: AlignmentData | null
   loading: boolean
+  loadingStage: LoadingStage | null
   error: string | null
   lastRequest: LastRequest
   submitRequest: (text: string, sourceLang: LanguageCode, targetLang: LanguageCode) => Promise<void>
@@ -32,6 +33,7 @@ export type UseTranslationRequestResult = {
 export function useTranslationRequest(): UseTranslationRequestResult {
   const [data, setData] = useState<AlignmentData | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingStage, setLoadingStage] = useState<LoadingStage | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [lastRequest, setLastRequest] = useState<LastRequest>(null)
 
@@ -42,6 +44,7 @@ export function useTranslationRequest(): UseTranslationRequestResult {
 
       try {
         setLoading(true)
+        setLoadingStage('itzuli')
         setError(null)
 
         // Validate request with Zod before proceeding
@@ -65,7 +68,7 @@ export function useTranslationRequest(): UseTranslationRequestResult {
           sentence_id: crypto.randomUUID(),
         }
 
-        const result = await submitTranslationRequest(request)
+        const result = await submitTranslationRequest(request, setLoadingStage)
         setData(result)
         // Clear error and lastRequest on successful request
         setError(null)
@@ -76,6 +79,7 @@ export function useTranslationRequest(): UseTranslationRequestResult {
         console.error('Translation request failed:', err)
       } finally {
         setLoading(false)
+        setLoadingStage(null)
       }
     },
     []
@@ -85,6 +89,7 @@ export function useTranslationRequest(): UseTranslationRequestResult {
     setData(null)
     setError(null)
     setLoading(false)
+    setLoadingStage(null)
     setLastRequest(null)
   }, [])
 
@@ -95,6 +100,7 @@ export function useTranslationRequest(): UseTranslationRequestResult {
   return {
     data,
     loading,
+    loadingStage,
     error,
     lastRequest,
     submitRequest,

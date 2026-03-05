@@ -1,9 +1,11 @@
 import classNames from 'classnames'
 import { useEffect, useState } from 'react'
 import { useI18n } from '../i18n'
+import type { LoadingStage } from '../services/alignmentApi'
 
 type LoadingIndicatorProps = {
   mode: 'input' | 'examples'
+  loadingStage?: LoadingStage | null
 }
 
 type ProgressStep = {
@@ -11,7 +13,13 @@ type ProgressStep = {
   status: 'pending' | 'active' | 'completed'
 }
 
-export function LoadingIndicator({ mode }: LoadingIndicatorProps) {
+const STAGE_INDEX: Record<LoadingStage, number> = {
+  itzuli: 0,
+  stanza: 1,
+  claude: 2,
+}
+
+export function LoadingIndicator({ mode, loadingStage }: LoadingIndicatorProps) {
   const { t } = useI18n()
   const [steps, setSteps] = useState<ProgressStep[]>([])
 
@@ -24,11 +32,24 @@ export function LoadingIndicator({ mode }: LoadingIndicatorProps) {
     ])
   }, [t])
 
+  // Drive steps from real SSE stage events when available
   useEffect(() => {
     if (mode !== 'input') return
+    if (loadingStage == null) return
 
-    // Simulate realistic progress timing - but never reach 100%
-    const intervals = [1500, 4000] // Transition between steps, but stay in progress
+    const activeIndex = STAGE_INDEX[loadingStage]
+    setSteps((prev) =>
+      prev.map((step, i) => ({
+        ...step,
+        status: i < activeIndex ? 'completed' : i === activeIndex ? 'active' : 'pending',
+      }))
+    )
+  }, [mode, loadingStage])
+
+  // Fallback timer-based progress when loadingStage is not provided
+  useEffect(() => {
+    if (mode !== 'input') return
+    if (loadingStage != null) return
 
     const updateProgress = (stepIndex: number) => {
       setSteps((prev) =>
@@ -39,22 +60,17 @@ export function LoadingIndicator({ mode }: LoadingIndicatorProps) {
       )
     }
 
-    // Start first step immediately
     updateProgress(0)
 
-    const timeouts: NodeJS.Timeout[] = []
-
-    intervals.forEach((delay, index) => {
-      const timeout = setTimeout(() => {
-        updateProgress(index + 1)
-      }, delay)
-      timeouts.push(timeout)
-    })
+    const timeouts = [
+      setTimeout(() => updateProgress(1), 1500),
+      setTimeout(() => updateProgress(2), 4000),
+    ]
 
     return () => {
       timeouts.forEach(clearTimeout)
     }
-  }, [mode])
+  }, [mode, loadingStage])
 
   return (
     <div
