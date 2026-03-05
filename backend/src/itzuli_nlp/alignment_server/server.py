@@ -1,5 +1,6 @@
 """FastAPI HTTP server for alignment data generation."""
 
+import asyncio
 import json
 import logging
 import os
@@ -112,8 +113,17 @@ async def analyze_and_scaffold(request: AnalysisRequest, req: Request):
             yield f"data: {json.dumps({'event': 'itzuli_done'})}\n\n"
 
             # Step 2: Stanza analysis
-            source_pipeline = get_cached_pipeline(request.source_lang)
-            target_pipeline = get_cached_pipeline(request.target_lang)
+            # Pipelines load from disk on first call (~5 min). Run in a thread and send
+            # SSE keepalive comments every 15s so Fly's proxy doesn't close the idle connection.
+            pipeline_task = asyncio.create_task(
+                asyncio.to_thread(
+                    lambda: (get_cached_pipeline(request.source_lang), get_cached_pipeline(request.target_lang))
+                )
+            )
+            while not pipeline_task.done():
+                yield ": keepalive\n\n"
+                await asyncio.sleep(15)
+            source_pipeline, target_pipeline = await pipeline_task
             source_analysis = process_raw_analysis(source_pipeline, request.text)
             target_analysis = process_raw_analysis(target_pipeline, translated_text)
             logger.info(f"Stanza: {len(source_analysis)} source tokens, {len(target_analysis)} target tokens")
